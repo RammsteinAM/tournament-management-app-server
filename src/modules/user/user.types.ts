@@ -10,7 +10,7 @@ export interface UserAuthData {
 }
 
 export interface UserData {
-    email: string;
+    email?: string;
     password?: string;
     displayName?: string;
     verificationCode?: string;
@@ -22,6 +22,9 @@ export interface UserData {
 // }
 
 export interface UserVerificationData {
+    token: string;
+}
+
+export interface DecodedTokenData {
     email: string;
-    verificationCode: string;
 }

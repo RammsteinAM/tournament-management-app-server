@@ -10,6 +10,9 @@ router.route("/")
   router.route("/verify:code")
   .get(verifyUser)
 
+  router.route("/verify/:token")
+  .get(verifyUser)
+
   router.route("/auth")
   .post(signIn)
 

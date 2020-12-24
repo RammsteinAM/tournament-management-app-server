@@ -11,6 +11,7 @@ const errorHandler = (
     let status = StatusCodesError.InternalServerError;
     let message: string = "Internal Server Error";
 
+    console.log(err);
     console.log("err instanceof BaseError: ", err instanceof BaseError);
 
     if (err instanceof BaseError) {

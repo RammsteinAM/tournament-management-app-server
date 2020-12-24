@@ -7,6 +7,7 @@ import cors from "cors";
 import userRoutes from './modules/user/user.route';
 import 'module-alias/register';
 import errorHandler from "./utils/errorHandler";
+import localeSetter from "./utils/localeSetter";
 
 class App {
   constructor() {
@@ -33,6 +34,7 @@ class App {
     this.app.use(cors());
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: false }));
+    this.app.use(localeSetter);
     this.app.use("/api/user", userRoutes);
     this.app.use(errorHandler);
   }

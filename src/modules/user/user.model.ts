@@ -13,12 +13,12 @@ export default class User {
     displayName: string;
     isVerified: boolean;
     private password: string;
-    private verificationCode: string;
+    private token: string;
     constructor(data: UserData) {
         this.email = data.email;
         this.password = data.password;
         this.displayName = data.displayName;
-        this.verificationCode = data.verificationCode;
+        this.token = data.verificationCode;
         this.isVerified = false;
     }
 
@@ -33,8 +33,8 @@ export default class User {
         return await createUserService({ email: this.email, password: encryptedPassword, displayName: this.displayName });
     }
 
-    async verify(): Promise<void> {
-        await verifyUserService({ email: this.email, verificationCode: this.verificationCode })
+    async verify(): Promise<UserData> {
+        return await verifyUserService({ token: this.token })
     }
 
     async signIn(): Promise<void> {

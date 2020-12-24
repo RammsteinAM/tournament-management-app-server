@@ -1,9 +1,11 @@
 import BadRequestError from "../../../src/errors/BadRequestError";
 import prisma from "../../../prisma/prisma";
-import { UserAuthData, UserCreateData as UserCreationData, UserData, UserVerificationData } from "../../modules/user/user.types";
+import { DecodedTokenData, UserAuthData, UserCreateData as UserCreationData, UserData, UserVerificationData } from "../../modules/user/user.types";
 import { ErrorNames } from "../../types/errorNames";
 import NotFoundError from "../../errors/NotFoundError";
 import { checkPasswordAsync } from "../../utils/encryption";
+import { createToken, getTokenData } from "../../utils/jwtTokenUtils";
+import { generateVerificationEmail, sendVerificationEmail } from "../../utils/emailUtils";
 
 export const findUserByEmail = async (email: string): Promise<UserData> => {
     // const todo = await Todo.findById(id);
@@ -17,12 +19,25 @@ export const createUser = async (userData: UserCreationData) => {
     if (existingUser) {
         throw new BadRequestError(ErrorNames.Registration, "Email already in use");
     }
-    return await prisma.user.create({ data: userData });
+    const user = await prisma.user.create({ data: userData });
+    if (user) {
+        const token = createToken(user.email);
+        const emailData = generateVerificationEmail(user.email, user.displayName, token);
+        await sendVerificationEmail(emailData)
+    }
+    return user;
 };
 
 export const verifyUser = async (data: UserVerificationData) => {
-    // const user = await prisma.user.create({ data });
-    // return user;
+    const tokenData = getTokenData(data.token);
+    const existingUser = await findUserByEmail(tokenData.email);
+    if (!existingUser) throw new BadRequestError(ErrorNames.NotFound, "User not found");
+    if (existingUser.isVerified) throw new BadRequestError(ErrorNames.AlreadyVerified, "User already verified");
+    const user = await prisma.user.update({
+        where: { email: tokenData.email },
+        data: { isVerified: true }
+    });
+    return user;
 };
 
 export const userAuth = async (userAuthData: UserAuthData) => {
@@ -38,7 +53,7 @@ export const userAuth = async (userAuthData: UserAuthData) => {
     if (!isPasswordCorrect) {
         throw new BadRequestError(ErrorNames.IncorrectPassword, "Password is incorrect");
     }
-    
+
     // const user = await prisma.user.create({ data });
     // return user;
 };

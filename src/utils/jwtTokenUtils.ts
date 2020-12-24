@@ -1,20 +1,21 @@
 import * as jwt from "jsonwebtoken";
 import UnauthorizedError from "../errors/UnauthorizedError";
+import { DecodedTokenData } from "../modules/user/user.types";
 import { ErrorNames } from "../types/errorNames";
 
-export const getDecoded = (token: string): any => {
-    try {
-        return jwt.verify(
-            token,
-            `${process.env.JWT_SECRET_KEY}`
-        );
-    } catch (ignored) {
-        throw new UnauthorizedError(ErrorNames.Unauthorized, "Unauthorized");
-    }
-};
+const secretKey = process.env.JWT_SECRET_KEY;
 
-export const createToken = (id: string): string => {
-    return jwt.sign({id}, `${process.env.JWT_SECRET_KEY}`, {
-        expiresIn: '1d',
+export const createToken = (email: string): string => {
+    return jwt.sign({ email }, secretKey, {
+        expiresIn: '30m',
     });
 }
+
+export const getTokenData = (token: string): DecodedTokenData => {
+    try {
+        return jwt.verify(token, secretKey) as DecodedTokenData;
+    }
+    catch (error) {
+        throw new UnauthorizedError();
+    }
+};
