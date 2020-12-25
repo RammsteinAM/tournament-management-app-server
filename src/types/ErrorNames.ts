@@ -9,4 +9,5 @@ export enum ErrorNames {
     IncorrectPassword = "INCORRECT_PASSWORD_ERROR",
     BadReques = "BAD_REQUEST_ERROR",
     ValidationError = "VALIDATION_ERROR",
+    UnprocessableEntity = "UNPROCESSABLE_ENTITY_ERROR",
 }

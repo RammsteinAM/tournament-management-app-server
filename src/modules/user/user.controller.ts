@@ -11,11 +11,6 @@ import BadRequestError from '../../errors/BadRequestError';
 
 export const getUserById = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
   
-  // const user = await userService.getUserById(req.params.id);
-  // res.status(200).json({
-  //   success: true,
-  //   data: user,
-  // });
 });
 
 export const verifyUser = asyncWrapper(async (req: Request<{ token: string }>, res: Response): Promise<void> => {
@@ -30,7 +25,7 @@ export const verifyUser = asyncWrapper(async (req: Request<{ token: string }>, r
 
 export const signIn = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
   const user = new User(req.body as UserAuthData);
-  const { email, displayName, isVerified } = await user.verify();
+  const { email, displayName, isVerified } = await user.signIn();
   // const user = await userService.verifyUser(req.params.id);
   // res.status(StatusCodesOkay.OK).json({
   //   success: true,
@@ -38,14 +33,11 @@ export const signIn = asyncWrapper(async (req: Request, res: Response): Promise<
   // });
 });
 
-export const createUser = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
-  // const user = await prisma.user.create({ data });
+export const registerUser = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
   const data = req.body as UserData;
   validateUserCreate(data);
-
   const userModel = new User(req.body as UserData);
   const { displayName, email } = await userModel.create();
-  // const {displayName, email} = await userService.createUser(req.body);
   res.status(StatusCodesOkay.Created).json({
     success: true,
     data: { displayName, email },

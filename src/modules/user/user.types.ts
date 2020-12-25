@@ -15,6 +15,8 @@ export interface UserData {
     displayName?: string;
     verificationCode?: string;
     isVerified?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 // export interface UserDeleteData {

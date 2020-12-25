@@ -5,9 +5,9 @@ import { ErrorNames } from "../types/errorNames";
 
 const secretKey = process.env.JWT_SECRET_KEY;
 
-export const createToken = (email: string): string => {
+export const createUserVerificationToken = (email: string): string => {
     return jwt.sign({ email }, secretKey, {
-        expiresIn: '30m',
+        expiresIn: '10m',
     });
 }
 

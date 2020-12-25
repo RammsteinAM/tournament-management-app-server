@@ -4,7 +4,8 @@ import { Application } from "express";
 import bodyParser from "body-parser";
 import path from "path";
 import cors from "cors";
-import userRoutes from './modules/user/user.route';
+import userRoutes from './modules/user/user.routes';
+import authRoutes from './modules/auth/auth.routes';
 import 'module-alias/register';
 import errorHandler from "./utils/errorHandler";
 import localeSetter from "./utils/localeSetter";
@@ -36,6 +37,7 @@ class App {
     this.app.use(bodyParser.urlencoded({ extended: false }));
     this.app.use(localeSetter);
     this.app.use("/api/user", userRoutes);
+    this.app.use("/api/auth", authRoutes);
     this.app.use(errorHandler);
   }
 }

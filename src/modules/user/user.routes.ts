@@ -1,14 +1,11 @@
 import { Router } from "express";
-import { getUserById, createUser, verifyUser, signIn } from "./user.controller";
+import { getUserById, registerUser, verifyUser, signIn } from "./user.controller";
 
 const router = Router();
 
 router.route("/")
   .get(getUserById)
-  .post(createUser);
-
-  router.route("/verify:code")
-  .get(verifyUser)
+  .post(registerUser);
 
   router.route("/verify/:token")
   .get(verifyUser)
