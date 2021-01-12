@@ -18,7 +18,7 @@ export const emailLocalizations: EmailLocalization = {
         verificationSubject: `${appName} էլ. փոստի հաստատում`,
         verificationMessage: (name) => (
             `Հարգելի ${name},
-            
+
             Բարի գալուստ ${appName}։
             Գրանցումն ավարտելու համար խնդրում ենք հաստատել Ձեր էլ. փոստի հասցեն՝ սեղմելով հետևյալ կոճակը.`
         ),

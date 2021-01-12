@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import { Application } from "express";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import path from "path";
 import cors from "cors";
 import userRoutes from './modules/user/user.routes';
@@ -28,11 +29,11 @@ class App {
     console.log("__dirname", __dirname)
     dotenv.config({ path: path.join(__dirname, "../.env") });
     this.addMiddlewares();
-    this.app.use(errorHandler);
   }
 
   private addMiddlewares(): void {
     this.app.use(cors());
+    this.app.use(cookieParser());
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: false }));
     this.app.use(localeSetter);

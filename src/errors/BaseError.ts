@@ -1,13 +1,12 @@
 import { StatusCodesError } from "../../src/types/status";
 
-class BaseError extends Error {
-    public readonly status: number;
+abstract class BaseError extends Error {
+    readonly status: number;
 
-    constructor(status: StatusCodesError, name: string, message: string) {
+    constructor(status: StatusCodesError, message: string, name: string) {
         super(message);
         this.status = status;
         this.name = name;
-        // Object.setPrototypeOf(this, BaseError.prototype);
     }
 }
 

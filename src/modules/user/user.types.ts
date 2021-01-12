@@ -10,23 +10,28 @@ export interface UserAuthData {
 }
 
 export interface UserData {
+    id?: number;
     email?: string;
     password?: string;
     displayName?: string;
-    verificationCode?: string;
     isVerified?: boolean;
+    verificationToken?: string;
     createdAt?: Date;
     updatedAt?: Date;
+}
+export interface UserLoginData {
+    accessToken: string;
+    refreshToken: string;
 }
 
 // export interface UserDeleteData {
 //     email: string;
 // }
 
-export interface UserVerificationData {
+export type UserVerificationData = {
     token: string;
 }
 
-export interface DecodedTokenData {
-    email: string;
+export type DecodedTokenData = {
+    id: number;
 }

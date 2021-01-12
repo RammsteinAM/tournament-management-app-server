@@ -1,21 +1,11 @@
 import { Router } from "express";
-import { getUserById, registerUser, verifyUser, signIn } from "./user.controller";
+import { authorize } from "../../utils/authMiddleware";
+import  { getUser, deleteUser } from "./user.controller";
 
 const router = Router();
 
-router.route("/")
-  .get(getUserById)
-  .post(registerUser);
-
-  router.route("/verify/:token")
-  .get(verifyUser)
-
-  router.route("/auth")
-  .post(signIn)
-
-// router.route("/:id")
-//   .get(getTodo)
-//   .put(updateTodo)
-//   .delete(deleteTodo);
+router.route("/:id")
+  .get(authorize, getUser)
+  .delete(deleteUser);
 
 export default router;
