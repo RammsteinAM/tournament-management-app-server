@@ -1,16 +1,16 @@
 import { asyncWrapper } from "../../utils/asyncWrapper";
-import { UserAuthData, UserCreateData, UserData, UserLoginData, UserVerificationData } from "../user/user.types";
-import { validateUserCreate } from "../user/user.validators";
+import { UserAuthData, UserCreateData, UserCreationData, UserData, UserLoginData, UserPasswordResetData, UserVerificationData, UserVerifiedData } from "../user/user.types";
+import { validateUserCreate } from "../auth/auth.validators";
 import { Request, Response } from "express";
 import { StatusCodesOkay } from "../../types/status";
-import { generateAndSendVerificationEmail, getAuthorizedAndVerifiedUser, getAuthorizedUser, getLoginTokens, registerUserService, verifyUserService } from "./auth.service";
+import { generateAndSendVerificationEmail, getAuthorizedAndVerifiedUser, getAuthorizedUser, getLoginTokens, registerUserService, sendPasswordResetEmail, verifyUserService } from "./auth.service";
 import { ReqBody as ResBody } from "../../types/main";
 
 export const registerUser = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
   const data = req.body as UserCreateData;
   validateUserCreate(data);
-  const { displayName, email } = await registerUserService(data);
-  const resBody: ResBody<UserData> = {
+  const { id, displayName, email, createdAt, updatedAt } = await registerUserService(data);
+  const resBody: ResBody<UserCreationData> = {
     success: true,
     data: { displayName, email },
   };
@@ -20,7 +20,7 @@ export const registerUser = asyncWrapper(async (req: Request, res: Response): Pr
 export const verifyUser = asyncWrapper(async (req: Request<UserVerificationData>, res: Response): Promise<void> => {
   const { token } = req.params;
   const { email, displayName, isVerified } = await verifyUserService({ token });
-  const resBody: ResBody<UserData> = {
+  const resBody: ResBody<UserVerifiedData> = {
     success: true,
     data: { displayName, email, isVerified },
   };
@@ -37,11 +37,6 @@ export const login = asyncWrapper(async (req: Request, res: Response): Promise<v
     data: { accessToken, refreshToken },
   };
   res.status(StatusCodesOkay.OK).json(reqBody);
-  // const user = await userService.verifyUser(req.params.id);
-  // res.status(StatusCodesOkay.OK).json({
-  //   success: true,
-  //   data: user,
-  // });
 });
 
 export const requestVerificationEmail = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
@@ -56,7 +51,19 @@ export const requestVerificationEmail = asyncWrapper(async (req: Request, res: R
   res.status(StatusCodesOkay.OK).json(reqBody);
 });
 
+export const requestPasswordResetEmail = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
+  const data = req.body as UserPasswordResetData;
+  await sendPasswordResetEmail(data.email);
+
+  const reqBody: ResBody = {
+    success: true,
+    message: "Password Reset Email sent",
+  };
+  res.status(StatusCodesOkay.OK).json(reqBody);
+});
+
 export const requestAccessToken = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
+  // TODO
   // const data = req.header as UserAuthData;
   // const dbUser = await getAuthorizedUser(data);
   // await generateAndSendVerificationEmail(dbUser);

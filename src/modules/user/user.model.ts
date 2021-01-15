@@ -1,91 +1,41 @@
 import prisma from "../../../prisma/prisma";
-import { encryptPasswordAsync } from "../../../src/utils/encryption";
-import {
-    deleteUserByEmail as deleteUserByEmailService,
-
-} from "./user.service";
-import { UserCreateData, UserData } from "./user.types";
-// export default class User {
-//     email: string;
-//     displayName: string;
-//     isVerified: boolean;
-//     private password: string;
-//     private token: string;
-//     constructor(data: UserData) {
-//         this.email = data.email;
-//         this.password = data.password;
-//         this.displayName = data.displayName;
-//         this.token = data.verificationCode;
-//         this.isVerified = false;
-//     }
-
-//     // async getUser(): Promise<UserData> {
-
-//     //     return await getUserByEmailService(this.email);
-
-//     // }
-
-//     async create(): Promise<UserData> {
-//         const encryptedPassword = await this.getEncryptedPassword();
-//         return await createUserService({ email: this.email, password: encryptedPassword, displayName: this.displayName });
-//     }
-
-//     async verify(): Promise<UserData> {
-//         return await verifyUserService({ token: this.token })
-//     }
-
-//     async signIn(): Promise<UserData> {
-//         //const encryptedPassword = await this.getEncryptedPassword();
-//         return await userAuthService({ email: this.email, password: this.password });
-//     }
-
-//     private async getEncryptedPassword(): Promise<string> {
-//         return encryptPasswordAsync(this.password);
-//     }
-
-//     // async delete(): Promise<void> {
-//     //     await deleteUserByEmailService({ email: this.email });
-//     // }
-
-// }
-
-interface IUser {
-    id?: number;
-    email: string;
-    password?: string;
-    displayName?: string;
-    verificationCode?: string;
-    isVerified?: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
-}
-
+import { UserData, UserEditData, UserInstanceData } from "./user.types";
 export default class User {
     id: number;
     email: string;
     displayName: string;
     isVerified: boolean;
+    googleId: string;
+    facebookId: string;
     private password: string;
-    private createdAt: Date;
-    private updatedAt: Date;
-    constructor(data: UserData) {
+    constructor(data: UserInstanceData) {
         this.id = data.id;
         this.email = data.email;
         this.password = data.password;
         this.displayName = data.displayName;
         this.isVerified = false;
+        this.googleId = data.googleId;
+        this.facebookId = data.facebookId;
     }
 
-    async findUserByEmail(): Promise<boolean> {
+    async findByEmail(): Promise<boolean> {
         return !!await prisma.user.findUnique({ where: { email: this.email } });
     }
 
-    async getUserById(): Promise<UserData> {
+    async getById(): Promise<UserData> {
         return await prisma.user.findUnique({ where: { id: this.id } });
     }
 
-    async getUserByEmail(): Promise<UserData> {
+    async getByEmail(): Promise<UserData> {
         return await prisma.user.findUnique({ where: { email: this.email } });
+    }
+
+    async getByGoogleId(): Promise<UserData> {
+        return await prisma.user.findUnique({ where: { googleId: this.googleId } });
+    }
+
+    async getByFacebookId(): Promise<UserData> {
+        return await prisma.user.findUnique({ where: { facebookId: this.facebookId } });
     }
 
     async create(): Promise<UserData> {
@@ -99,10 +49,55 @@ export default class User {
         });
     }
 
+    async createSocial(): Promise<UserData> {
+        return await prisma.user.create({
+            data:
+            {
+                email: this.email,
+                password: this.password,
+                displayName: this.displayName,
+                googleId: this.googleId,
+                facebookId: this.facebookId,
+                isVerified: true
+            }
+        });
+    }
+
+    async setGoogleId(): Promise<UserData> {
+        return await prisma.user.update({
+            where: {
+                email: this.email
+            },
+            data: {
+                googleId: this.googleId,
+                isVerified: true
+            }
+        })
+    }
+
+    async setFacebookId(): Promise<UserData> {
+        return await prisma.user.update({
+            where: {
+                email: this.email
+            },
+            data: {
+                facebookId: this.facebookId,
+                isVerified: true
+            }
+        })
+    }
+
     async setVerificationToken(token: string): Promise<UserData> {
         return await prisma.user.update({
             where: { id: this.id },
             data: { verificationToken: token }
+        });
+    }
+
+    async sePasswordResetToken(token: string): Promise<UserData> {
+        return await prisma.user.update({
+            where: { email: this.email },
+            data: { passwordResetToken: token }
         });
     }
 
@@ -114,8 +109,27 @@ export default class User {
         });
     }
 
-    // async delete(): Promise<void> {
-    //     await deleteUserByEmailService({ email: this.email });
-    // }
+    async updateById(): Promise<UserData> {
+        // let data: UserEditData;
+        // if (this.displayName) data = { displayName: this.displayName };
+        // if (this.password) data = { password: this.password };
+        return await prisma.user.update({
+            where: {
+                id: this.id
+            },
+            data: {
+                displayName: this.displayName || undefined,
+                password: this.password || undefined
+            }
+        })
+    }
+
+    async deleteById(): Promise<UserData> {
+        return await prisma.user.delete({
+            where: {
+                id: this.id
+            }
+        })
+    }
 
 }

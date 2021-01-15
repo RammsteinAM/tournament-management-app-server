@@ -1,14 +1,11 @@
-import BaseError from '../../errors/BaseError';
 import { Request, Response } from "express";
 import { asyncWrapper } from "../../utils/asyncWrapper";
-import prisma from "../../../prisma/prisma";
 import * as userService from "../../modules/user/user.service";
 import { StatusCodesOkay } from '../../../src/types/status';
-import User from './user.model';
-import { UserAuthData, UserData, UserVerificationData } from './user.types';
-import { validateUserCreate } from './user.validators';
-import BadRequestError from '../../errors/BadRequestError';
 import { AuthRequest } from '../../types/main';
+import { UserEditRequestData } from "./user.types";
+import { validateUserUpdate } from "../auth/auth.validators";
+import BadRequestError from "../../errors/BadRequestError";
 
 export const getUser = asyncWrapper(async (req: AuthRequest<{ id: number }>, res: Response): Promise<void> => {
 
@@ -23,26 +20,20 @@ export const getUser = asyncWrapper(async (req: AuthRequest<{ id: number }>, res
   });
 })
 
-// export const verifyUser = asyncWrapper(async (req: Request<{ token: string }>, res: Response): Promise<void> => {
-//   const token = req.params.token;
-//   const userModel = new User({verificationCode: token});
-//   const { email, displayName, isVerified } = await userModel.verify();
-//   res.status(StatusCodesOkay.OK).json({
-//     success: true,
-//     data: { displayName, email, isVerified },
-//   });
-// });
+export const editUser = asyncWrapper(async (req: AuthRequest<{ id: number }>, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const data = req.body as UserEditRequestData;
+  if (!data.displayName && !data.currentPassword) throw new BadRequestError();
+  if (data.currentPassword) {
+    validateUserUpdate(data);
+  }
+  const { email, displayName } = await userService.updateUser(parseInt(`${id}`, 10), data);
 
-// export const registerUser = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
-//   const data = req.body as UserData;
-//   validateUserCreate(data);
-//   const userModel = new User(req.body as UserData);
-//   const { displayName, email } = await userModel.create();
-//   res.status(StatusCodesOkay.Created).json({
-//     success: true,
-//     data: { displayName, email },
-//   });
-// });
+  res.status(StatusCodesOkay.OK).json({
+    success: true,
+    data: { email, displayName },
+  });
+})
 
 export const deleteUser = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
   // const user = await userService.deleteUserById(req.params.id);

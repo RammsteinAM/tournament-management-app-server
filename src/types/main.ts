@@ -12,6 +12,14 @@ interface EmailLocalizationLang {
     verifyButtonText: string;
     verificationSubject: string;
     verificationMessage: (name: string) => string;
+    passwordResetButtonText: string;
+    passwordResetSubject: string;
+    passwordResetMessage: (name: string) => string;
+    deleteAccountButtonText: string;
+    deleteAccountSubject: string;
+    deleteAccountMessage: (name: string) => string;
+    accountDeletedSubject: string;
+    accountDeletedMessage: string;
 }
 
 export type EmailLocalization = {
@@ -24,11 +32,21 @@ export interface EmailMessage {
     dynamicTemplateData: EmailDynamicTemplateData
 }
 
+export interface EmailWithButtonMessage {
+    to: string;
+    from: string;
+    templateId: string;
+    dynamicTemplateData: EmailWithButtonDynamicTemplateData
+}
+
 interface EmailDynamicTemplateData {
     subject: string;
     message: string;
-    verifyBtnText: string;
-    verificationLink: string
+    link: string
+}
+
+interface EmailWithButtonDynamicTemplateData extends EmailDynamicTemplateData {
+    btnText: string;
 }
 
 export type AuthRequest<T = core.ParamsDictionary> = Request<T>
@@ -43,5 +61,6 @@ export interface ReqBody<DataType = undefined> {
 export enum TokenDurationFor {
     Verification = "5m",
     Access = "20m",
+    PasswordReset = "30m",
     Refresh = "180d",
 }

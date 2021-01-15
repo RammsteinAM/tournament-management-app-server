@@ -1,5 +1,7 @@
 import sgMail, { MailDataRequired } from '@sendgrid/mail';
-import { EmailMessage, Locales } from '../types/main';
+import InternalServerError from '../errors/InternalServerError';
+import { EmailMessage, EmailWithButtonMessage, Locales } from '../types/main';
+import { mailSendRoutes } from './constants';
 import { emailLocalizations } from './localizationUtils';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -8,20 +10,80 @@ export const generateVerificationEmail = (email: string, displayName: string, to
     const locale: keyof typeof Locales = Locales[langCode as Locales];
     const name = displayName || email;
 
-    const message: EmailMessage = {
+    const message: EmailWithButtonMessage = {
         to: email,
         from: process.env.SENDGRID_SENDER,
         templateId: "d-f1b7f509d3ce40e18cc69b22dd6d9aec",
         dynamicTemplateData: {
             subject: emailLocalizations[locale].verificationSubject,
             message: emailLocalizations[locale].verificationMessage(name),
-            verifyBtnText: emailLocalizations[locale].verifyButtonText,
-            verificationLink: `${process.env.EMAIL_VERIFICATION_ROUTE}${token}`
+            btnText: emailLocalizations[locale].verifyButtonText,
+            link: `${mailSendRoutes.verification}${token}`
         }
     }
     return message;
 }
 
-export const sendVerificationEmail = async (message: any): Promise<void> => {
-    await sgMail.send(message);
+export const generatePasswordResetEmail = (email: string, displayName: string, token: string) => {
+    const langCode = process.env.LOCALE || Locales.en;
+    const locale: keyof typeof Locales = Locales[langCode as Locales];
+    const name = displayName || email;
+
+    const message: EmailWithButtonMessage = {
+        to: email,
+        from: process.env.SENDGRID_SENDER,
+        templateId: "d-f1b7f509d3ce40e18cc69b22dd6d9aec",
+        dynamicTemplateData: {
+            subject: emailLocalizations[locale].passwordResetSubject,
+            message: emailLocalizations[locale].passwordResetMessage(name),
+            btnText: emailLocalizations[locale].passwordResetButtonText,
+            link: `${mailSendRoutes.passwordReset}${token}`
+        }
+    }
+    return message;
+}
+
+export const generateDeleteAccountEmail = (email: string, displayName: string, token: string) => {
+    const langCode = process.env.LOCALE || Locales.en;
+    const locale: keyof typeof Locales = Locales[langCode as Locales];
+    const name = displayName || email;
+
+    const message: EmailWithButtonMessage = {
+        to: email,
+        from: process.env.SENDGRID_SENDER,
+        templateId: "d-59ff9ae7b8d14729b3ed22ba4c53313b",
+        dynamicTemplateData: {
+            subject: emailLocalizations[locale].deleteAccountSubject,
+            message: emailLocalizations[locale].deleteAccountMessage(name),
+            btnText: emailLocalizations[locale].deleteAccountButtonText,
+            link: `${mailSendRoutes.deleteAccount}${token}`
+        }
+    }
+    return message;
+}
+
+export const generateAccountDeletedEmail = (email: string, displayName: string, token: string) => {
+    const langCode = process.env.LOCALE || Locales.en;
+    const locale: keyof typeof Locales = Locales[langCode as Locales];
+    const name = displayName || email;
+
+    const message: EmailMessage = {
+        to: email,
+        from: process.env.SENDGRID_SENDER,
+        templateId: "d-aecaca474e4f447db833776c47f58980",
+        dynamicTemplateData: {
+            subject: emailLocalizations[locale].accountDeletedSubject,
+            message: emailLocalizations[locale].accountDeletedMessage,
+            link: `${mailSendRoutes.deleteAccount}${token}`
+        }
+    }
+    return message;
+}
+
+export const sendEmail = async (message: any): Promise<void> => {
+    try {
+        await sgMail.send(message);
+    } catch (error) {
+        throw new InternalServerError("Error Sending Email", "MailSendError");
+    }
 };

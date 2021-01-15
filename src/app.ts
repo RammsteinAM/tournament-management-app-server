@@ -7,6 +7,7 @@ import path from "path";
 import cors from "cors";
 import userRoutes from './modules/user/user.routes';
 import authRoutes from './modules/auth/auth.routes';
+import socialRoutes from "./modules/social/social.routes";
 import 'module-alias/register';
 import errorHandler from "./utils/errorHandler";
 import localeSetter from "./utils/localeSetter";
@@ -39,6 +40,7 @@ class App {
     this.app.use(localeSetter);
     this.app.use("/api/user", userRoutes);
     this.app.use("/api/auth", authRoutes);
+    this.app.use("/api/social", socialRoutes);
     this.app.use(errorHandler);
   }
 }
