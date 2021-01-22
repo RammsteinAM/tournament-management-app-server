@@ -1,4 +1,4 @@
-import { DecodedTokenData, UserAuthData, UserCreateData, UserData, UserLoginData, UserVerificationData } from "../../modules/user/user.types";
+import { DecodedTokenData, UserAuthData, UserCreateData, UserData, UserLoginData, UserLoginTokenData, UserVerificationData } from "../../modules/user/user.types";
 import BadRequestError from "../../errors/BadRequestError";
 import { checkPasswordAsync, encryptPasswordAsync } from "../../utils/encryption";
 import { createToken, getVerifiedData } from "../../utils/jwtTokenUtils";
@@ -34,16 +34,6 @@ export const generateAndSendVerificationEmail = async (dbUser: UserData): Promis
     await sendEmail(emailData);
 }
 
-export const sendPasswordResetEmail = async (email: string): Promise<void> => {
-    const user = new User({ email });
-    const dbUser = await user.getByEmail();
-    if(!dbUser) throw new BadRequestError("User not found", "UserNotFoundError");
-    const token = createToken(dbUser.id, process.env.VERIFICATION_TOKEN_SECRET, TokenDurationFor.PasswordReset);
-    user.sePasswordResetToken(token);
-    const emailData = generateVerificationEmail(dbUser.email, dbUser.displayName, token);
-    await sendEmail(emailData);
-}
-
 export const verifyUserService = async (data: UserVerificationData): Promise<UserData> => {
     const tokenData: DecodedTokenData = getVerifiedData(data.token, process.env.VERIFICATION_TOKEN_SECRET);
     const user = new User(tokenData);
@@ -69,7 +59,7 @@ export const getAuthorizedAndVerifiedUser = async (data: UserAuthData): Promise<
     return user;
 }
 
-export const getLoginTokens = (id: number): UserLoginData => {
+export const getLoginTokens = (id: number): UserLoginTokenData => {
     const accessToken = createToken(id, ACCESS_TOKEN_SECRET, TokenDurationFor.Access);
     const refreshToken = createToken(id, REFRESH_TOKEN_SECRET, TokenDurationFor.Refresh);
     return { accessToken, refreshToken };

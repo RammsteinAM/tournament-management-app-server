@@ -55,10 +55,12 @@ export interface UserVerifiedData extends UserCreationData {
     isVerified: boolean;
 }
 
-export interface UserLoginData {
+export interface UserLoginTokenData {
     accessToken: string;
     refreshToken: string;
 }
+
+export type UserLoginData = UserCreationData & UserLoginTokenData;
 
 // export interface UserDeleteData {
 //     email: string;

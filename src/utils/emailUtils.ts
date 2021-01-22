@@ -24,7 +24,7 @@ export const generateVerificationEmail = (email: string, displayName: string, to
     return message;
 }
 
-export const generatePasswordResetEmail = (email: string, displayName: string, token: string) => {
+export const generatePasswordResetEmail =   (email: string, displayName: string, token: string) => {
     const langCode = process.env.LOCALE || Locales.en;
     const locale: keyof typeof Locales = Locales[langCode as Locales];
     const name = displayName || email;

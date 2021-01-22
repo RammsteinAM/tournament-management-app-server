@@ -9,13 +9,6 @@ router.route("/google")
 router.route("/facebook")
     .post(facebookLoginOrRegister);
 
-// router.route("/register")
-//     .post(registerUser);
 
-// router.route("/verify/:token")
-//     .get(verifyUser);
-
-// router.route("/requestaccesstoken")
-// .post(requestAccessToken);
 
 export default router;

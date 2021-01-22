@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { registerUser, verifyUser, login, requestVerificationEmail, requestAccessToken } from "./auth.controller";
+import {
+    registerUser,
+    verifyUser,
+    login,
+    requestVerificationEmail,
+    requestAccessToken
+} from "./auth.controller";
 
 const router = Router();
 
@@ -12,10 +18,10 @@ router.route("/register")
 router.route("/verify/:token")
     .get(verifyUser);
 
-router.route("/resendmail")
+router.route("/resend-mail")
     .post(requestVerificationEmail);
-    
-router.route("/requestaccesstoken")
-.post(requestAccessToken);
+
+router.route("/request-access-token")
+    .post(requestAccessToken);
 
 export default router;

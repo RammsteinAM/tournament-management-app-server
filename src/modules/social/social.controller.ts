@@ -7,21 +7,21 @@ import { ReqBody as ResBody } from "../../types/main";
 import { GoogleUserData } from "./social.types";
 
 export const googleLoginOrRegister = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
-  const data = req.body as GoogleUserData;
-  const { accessToken, refreshToken } = await registerOrLoginGoogleUser(data.token);
+  const reqData = req.body as GoogleUserData;
+  const data = await registerOrLoginGoogleUser(reqData.token);
   const resBody: ResBody<UserLoginData> = {
     success: true,
-    data: { accessToken, refreshToken },
+    data,
   };
   res.status(StatusCodesOkay.OK).json(resBody);
 });
 
 export const facebookLoginOrRegister = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
-  const data = req.body;
-  const { accessToken, refreshToken } = await registerOrLoginFacebookUser(data);
+  const reqData = req.body;
+  const data = await registerOrLoginFacebookUser(reqData);
   const resBody: ResBody<UserLoginData> = {
     success: true,
-    data: { accessToken, refreshToken },
+    data,
   };
   res.status(StatusCodesOkay.OK).json(resBody);
 });

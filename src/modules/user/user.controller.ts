@@ -2,10 +2,11 @@ import { Request, Response } from "express";
 import { asyncWrapper } from "../../utils/asyncWrapper";
 import * as userService from "../../modules/user/user.service";
 import { StatusCodesOkay } from '../../../src/types/status';
-import { AuthRequest } from '../../types/main';
-import { UserEditRequestData } from "./user.types";
+import { AuthRequest, ReqBody } from '../../types/main';
+import { UserEditRequestData, UserPasswordResetData } from "./user.types";
 import { validateUserUpdate } from "../auth/auth.validators";
 import BadRequestError from "../../errors/BadRequestError";
+import { sendPasswordResetEmail } from "../../modules/user/user.service";
 
 export const getUser = asyncWrapper(async (req: AuthRequest<{ id: number }>, res: Response): Promise<void> => {
 
@@ -41,4 +42,15 @@ export const deleteUser = asyncWrapper(async (req: Request, res: Response): Prom
   //   success: true,
   //   data: {}
   // });
+});
+
+export const requestPasswordResetEmail = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
+  const data = req.body as UserPasswordResetData;
+  await sendPasswordResetEmail(data.email);
+
+  const reqBody: ReqBody = {
+    success: true,
+    message: "Password Reset Email sent",
+  };
+  res.status(StatusCodesOkay.OK).json(reqBody);
 });

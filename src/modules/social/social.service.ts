@@ -3,14 +3,16 @@ import { encryptPasswordAsync } from '../../utils/encryption';
 import { createSocialUserPassword } from '../../utils/passwordUtils';
 import { getLoginTokens } from '../auth/auth.service';
 import User from '../user/user.model';
-import { UserInstanceData, UserLoginData } from '../user/user.types';
+import { UserData, UserInstanceData, UserLoginData, UserLoginTokenData } from '../user/user.types';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import axios, { AxiosResponse } from 'axios';
 import { FacebookResponse, FacebookVerifyResponse } from './social.types';
 import UnauthorizedError from '../../errors/UnauthorizedError';
+import { createToken } from '../../utils/jwtTokenUtils';
+import { TokenDurationFor } from '../../types/main';
+const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, GOOGLE_CLIENT_ID } = process.env;
 //import FB from 'fb';
-const clientId = process.env.GOOGLE_CLIENT_ID;
-const client = new OAuth2Client(clientId);
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 export const registerOrLoginGoogleUser = async (token: string): Promise<UserLoginData> => {
     const { sub, email, given_name, family_name }: TokenPayload = await googleVerify(token);
@@ -27,7 +29,7 @@ export const registerOrLoginGoogleUser = async (token: string): Promise<UserLogi
 
     const existingSocialUser = await user.getByGoogleId();
     if (existingSocialUser) {
-        return getLoginTokens(existingSocialUser.id);
+        return getSocialLoginData(existingSocialUser);
     }
 
     const existingLocalUser = await user.getByEmail();
@@ -35,12 +37,12 @@ export const registerOrLoginGoogleUser = async (token: string): Promise<UserLogi
         if (!existingLocalUser.isVerified || !existingLocalUser.googleId) {
             await user.setGoogleId();
         }
-        return getLoginTokens(existingLocalUser.id);
+        return getSocialLoginData(existingLocalUser);
     }
 
     const createdUser = await user.createSocial();
     if (!createdUser) throw new InternalServerError();
-    return getLoginTokens(createdUser.id);
+    return getSocialLoginData(createdUser);
 }
 
 export const registerOrLoginFacebookUser = async (data: FacebookResponse): Promise<any> => {
@@ -59,7 +61,7 @@ export const registerOrLoginFacebookUser = async (data: FacebookResponse): Promi
 
     const existingSocialUser = await user.getByFacebookId();
     if (existingSocialUser) {
-        return getLoginTokens(existingSocialUser.id);
+        return getSocialLoginData(existingSocialUser);
     }
 
     if (user.email) {
@@ -68,19 +70,19 @@ export const registerOrLoginFacebookUser = async (data: FacebookResponse): Promi
             if (!existingLocalUser.isVerified || !existingLocalUser.facebookId) {
                 await user.setFacebookId();
             }
-            return getLoginTokens(existingLocalUser.id);
+            return getSocialLoginData(existingLocalUser);
         }
     }
 
     const createdUser = await user.createSocial();
     if (!createdUser) throw new InternalServerError();
-    return getLoginTokens(createdUser.id);
+    return getSocialLoginData(createdUser);
 }
 
 export const googleVerify = async (token: string): Promise<TokenPayload> => {
     const ticket = await client.verifyIdToken({
         idToken: token,
-        audience: clientId,
+        audience: GOOGLE_CLIENT_ID,
     });
     const payload = ticket.getPayload();
     return payload;
@@ -93,4 +95,11 @@ export const facebookVerify = async (data: FacebookResponse): Promise<string> =>
         return user_id;
     }
     return null;
+}
+
+export const getSocialLoginData = (user: UserData): UserLoginData => {
+    const { email, displayName } = user;
+    const accessToken = createToken(user.id, ACCESS_TOKEN_SECRET, TokenDurationFor.Access);
+    const refreshToken = createToken(user.id, REFRESH_TOKEN_SECRET, TokenDurationFor.Refresh);
+    return { accessToken, refreshToken, email, displayName };
 }

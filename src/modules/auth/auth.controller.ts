@@ -3,7 +3,7 @@ import { UserAuthData, UserCreateData, UserCreationData, UserData, UserLoginData
 import { validateUserCreate } from "../auth/auth.validators";
 import { Request, Response } from "express";
 import { StatusCodesOkay } from "../../types/status";
-import { generateAndSendVerificationEmail, getAuthorizedAndVerifiedUser, getAuthorizedUser, getLoginTokens, registerUserService, sendPasswordResetEmail, verifyUserService } from "./auth.service";
+import { generateAndSendVerificationEmail, getAuthorizedAndVerifiedUser, getAuthorizedUser, getLoginTokens, registerUserService, verifyUserService } from "./auth.service";
 import { ReqBody as ResBody } from "../../types/main";
 
 export const registerUser = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
@@ -29,12 +29,12 @@ export const verifyUser = asyncWrapper(async (req: Request<UserVerificationData>
 
 export const login = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
   const data = req.body as UserAuthData;
-  const { id: userId } = await getAuthorizedAndVerifiedUser(data);
+  const { id: userId, displayName, email } = await getAuthorizedAndVerifiedUser(data);
   const { accessToken, refreshToken } = getLoginTokens(userId);
 
   const reqBody: ResBody<UserLoginData> = {
     success: true,
-    data: { accessToken, refreshToken },
+    data: { accessToken, refreshToken, email, displayName },
   };
   res.status(StatusCodesOkay.OK).json(reqBody);
 });
@@ -47,17 +47,6 @@ export const requestVerificationEmail = asyncWrapper(async (req: Request, res: R
   const reqBody: ResBody = {
     success: true,
     message: "Verification Email sent",
-  };
-  res.status(StatusCodesOkay.OK).json(reqBody);
-});
-
-export const requestPasswordResetEmail = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
-  const data = req.body as UserPasswordResetData;
-  await sendPasswordResetEmail(data.email);
-
-  const reqBody: ResBody = {
-    success: true,
-    message: "Password Reset Email sent",
   };
   res.status(StatusCodesOkay.OK).json(reqBody);
 });
