@@ -45,7 +45,7 @@ export const registerOrLoginGoogleUser = async (token: string): Promise<UserLogi
     return getSocialLoginData(createdUser);
 }
 
-export const registerOrLoginFacebookUser = async (data: FacebookResponse): Promise<any> => {
+export const registerOrLoginFacebookUser = async (data: FacebookResponse): Promise<UserLoginData> => {
     const userId: string = await facebookVerify(data);
     if (!userId) throw new UnauthorizedError();
 
@@ -98,8 +98,8 @@ export const facebookVerify = async (data: FacebookResponse): Promise<string> =>
 }
 
 export const getSocialLoginData = (user: UserData): UserLoginData => {
-    const { email, displayName } = user;
-    const accessToken = createToken(user.id, ACCESS_TOKEN_SECRET, TokenDurationFor.Access);
-    const refreshToken = createToken(user.id, REFRESH_TOKEN_SECRET, TokenDurationFor.Refresh);
-    return { accessToken, refreshToken, email, displayName };
+    const { id, email, displayName } = user;
+    const accessToken = createToken(user.id, ACCESS_TOKEN_SECRET, TokenDurationFor.Access, true);
+    const refreshToken = createToken(user.id, REFRESH_TOKEN_SECRET, TokenDurationFor.Refresh, true);
+    return { id, email, displayName, accessToken, refreshToken };
 }

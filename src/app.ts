@@ -27,13 +27,12 @@ class App {
   }
 
   private async configure(): Promise<void> {
-    console.log("__dirname", __dirname)
     dotenv.config({ path: path.join(__dirname, "../.env") });
     this.addMiddlewares();
   }
 
   private addMiddlewares(): void {
-    this.app.use(cors());
+    this.app.use(cors({origin: true, credentials: true}));
     this.app.use(cookieParser());
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: false }));

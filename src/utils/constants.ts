@@ -1,7 +1,7 @@
-const mainRoute = process.env.API_ROUTE;
+const mainRoute = process.env.CLIENT_URL;
 
 export const mailSendRoutes = {
-    verification: `${mainRoute}auth/verify/`, // TODO
-    passwordReset: `${mainRoute}auth/passwordreset/`, // TODO
+    verification: `${mainRoute}verify-email/`,
+    passwordReset: `${mainRoute}reset-password/`,
     deleteAccount: `${mainRoute}user/`, // TODO
 }

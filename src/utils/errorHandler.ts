@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import BaseError from "../../src/errors/BaseError";
 import { StatusCodesError } from "../../src/types/status";
+import { ErrorNames } from "../types/error";
 
 const errorHandler = (
     err: any,
@@ -9,6 +10,7 @@ const errorHandler = (
     next: NextFunction
 ): Response => {
     let status = StatusCodesError.InternalServerError;
+    let error: ErrorNames = ErrorNames.Internal;
     let message: string = "Internal Server Error";
 
     console.log(err);
@@ -16,12 +18,14 @@ const errorHandler = (
 
     if (err instanceof BaseError) {
         status = err.status;
+        error = err.name;
         message = err.message;
     }
 
     return res.status(status).send({
         success: false,
-        error: message,
+        error: error.toString(),
+        message
     });
 };
 export default errorHandler;

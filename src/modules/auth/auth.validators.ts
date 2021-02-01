@@ -1,5 +1,6 @@
 import Joi from "joi";
 import BadRequestError from "../../errors/BadRequestError";
+import { ErrorNames } from "../../types/error";
 import { capitalizeFirstLetter } from "../../utils/stringUtils";
 import { UserInstanceData } from "../user/user.types";
 
@@ -32,7 +33,7 @@ export const validateUserCreate = (data: UserInstanceData): boolean => {
     const { error } = validationSchemas.userCreate.validate({ email: data.email, password: data.password });
     if (error) {
         const accessor = error.details[0].path[0] as string;
-        throw new BadRequestError(`${capitalizeFirstLetter(accessor)} validation failed`, "ValidationError");
+        throw new BadRequestError(`${capitalizeFirstLetter(accessor)} validation failed`, ErrorNames.Validation);
     }
     return true;
 }
@@ -41,7 +42,7 @@ export const validateUserUpdate = (data: UserInstanceData): boolean => {
     const { error } = validationSchemas.userUpdate.validate({ password: data.password });
     if (error) {
         const accessor = error.details[0].path[0] as string;
-        throw new BadRequestError(`${capitalizeFirstLetter(accessor)} validation failed`, "ValidationError");
+        throw new BadRequestError(`${capitalizeFirstLetter(accessor)} validation failed`, ErrorNames.Validation);
     }
     return true;
 }

@@ -9,7 +9,6 @@ router.route("/:id")
   .put(/* authorize,  */editUser)
   .delete(deleteUser);
 
-
 router.route("/forgot-password")
   .post(requestPasswordResetEmail);
 

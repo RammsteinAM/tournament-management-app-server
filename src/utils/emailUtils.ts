@@ -1,5 +1,6 @@
 import sgMail, { MailDataRequired } from '@sendgrid/mail';
 import InternalServerError from '../errors/InternalServerError';
+import { ErrorNames } from '../types/error';
 import { EmailMessage, EmailWithButtonMessage, Locales } from '../types/main';
 import { mailSendRoutes } from './constants';
 import { emailLocalizations } from './localizationUtils';
@@ -84,6 +85,6 @@ export const sendEmail = async (message: any): Promise<void> => {
     try {
         await sgMail.send(message);
     } catch (error) {
-        throw new InternalServerError("Error Sending Email", "MailSendError");
+        throw new InternalServerError("Error Sending Email", ErrorNames.MailSend);
     }
 };
