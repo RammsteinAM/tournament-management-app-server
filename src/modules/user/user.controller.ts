@@ -32,7 +32,7 @@ export const editUser = asyncWrapper(async (req: AuthRequest<{ id: number }>, re
 
   res.status(StatusCodesOkay.OK).json({
     success: true,
-    data: { email, displayName },
+    data: { id, email, displayName },
   });
 })
 

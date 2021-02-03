@@ -39,7 +39,8 @@ export const deleteUserByEmail = async (email: string) => {
 export const sendPasswordResetEmail = async (email: string): Promise<void> => {
     const user = new User({ email });
     const dbUser = await user.getByEmail();
-    if(!dbUser) throw new BadRequestError("User not found", ErrorNames.UserNotFound);
+    if (!dbUser) throw new BadRequestError("User not found", ErrorNames.UserNotFound);
+    if (dbUser.googleId || dbUser.facebookId) throw new BadRequestError("Password reset is not possible", ErrorNames.SocialUserForgotPassword);
     const token = createToken(dbUser.id, process.env.VERIFICATION_TOKEN_SECRET, TokenDurationFor.PasswordReset);
     user.sePasswordResetToken(token);
     const emailData = generatePasswordResetEmail(dbUser.email, dbUser.displayName, token);
