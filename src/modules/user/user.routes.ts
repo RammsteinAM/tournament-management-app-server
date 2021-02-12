@@ -6,7 +6,7 @@ const router = Router();
 
 router.route("/:id")
   .get(authorize, getUser)
-  .put(/* authorize,  */editUser)
+  .put(authorize, editUser)
   .delete(deleteUser);
 
 router.route("/forgot-password")
