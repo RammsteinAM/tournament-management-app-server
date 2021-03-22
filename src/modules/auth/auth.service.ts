@@ -1,20 +1,21 @@
-import { DecodedTokenData, UserAuthData, UserCreateData, UserData, UserLoginCheckResData, UserLoginData, UserLoginTokenData, UserResetPasswordData, UserVerificationData } from "../../modules/user/user.types";
+import { DecodedTokenData, UserAuthData, UserCreateData, UserData, UserEditRequestData, UserLoginCheckResData, UserLoginData, UserLoginTokenData, UserResetPasswordData, UserVerificationData } from "./auth.types";
 import BadRequestError from "../../errors/BadRequestError";
 import { checkPasswordAsync, encryptPasswordAsync } from "../../utils/encryption";
 import { createToken, getVerifiedData, verifyTokenData } from "../../utils/jwtTokenUtils";
-import { generateVerificationEmail, sendEmail } from "../../utils/emailUtils";
-import User from "../user/user.model";
+import { generateVerificationEmail, generateDeleteAccountEmail, sendEmail, generatePasswordResetEmail } from "../../utils/emailUtils";
+import User from "./auth.model";
 import UnprocessableEntity from "../../errors/UnprocessableEntity";
 import UnauthorizedError from "../../errors/UnauthorizedError";
-import { TokenDurationFor } from "../../types/main";
+import { Locales, TokenDurationFor } from "../../types/main";
 import ForbiddenError from "../../errors/ForbiddenError";
 import InternalServerError from "../../errors/InternalServerError";
 import { getDateDiffInSeconds } from "../../utils/dateUtils";
 import { ErrorNames } from "../../types/error";
 import { access } from "fs";
+import NotFoundError from "../../errors/NotFoundError";
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, VERIFICATION_TOKEN_SECRET } = process.env;
 
-export const registerUserService = async (userCreationData: UserCreateData): Promise<UserData> => {
+export const registerUserService = async (userCreationData: UserCreateData, locale: keyof typeof Locales): Promise<UserData> => {
     const encryptedPassword = await encryptPasswordAsync(userCreationData.password);
     const userData = { ...userCreationData, password: encryptedPassword };
     const user = new User(userData);
@@ -24,17 +25,25 @@ export const registerUserService = async (userCreationData: UserCreateData): Pro
     }
     const createdUser = await user.create();
     if (!createdUser) throw new InternalServerError();
-    generateAndSendVerificationEmail(createdUser);
+    generateAndSendVerificationEmail(createdUser, locale);
     return createdUser;
 }
 
-export const generateAndSendVerificationEmail = async (dbUser: UserData, resend = false): Promise<void> => {
+export const isEmailRegisteredService = async (email: string): Promise<void> => {
+    const user = new User({ email });
+    const existingUser = await user.getByEmail();
+    if (existingUser) {
+        throw new BadRequestError("Email already in use", ErrorNames.EmailInUse);
+    }
+}
+
+export const generateAndSendVerificationEmail = async (dbUser: UserData, locale: keyof typeof Locales, resend = false): Promise<void> => {
     if (dbUser.isVerified) throw new BadRequestError("User is already verified", ErrorNames.AlreadyVerified);
     if (resend && getDateDiffInSeconds(dbUser.updatedAt) < 60) throw new BadRequestError("Cannot process the request", ErrorNames.EmailRequestSmallInterval);
     const user = new User({ id: dbUser.id });
     const token = createToken(dbUser.id, VERIFICATION_TOKEN_SECRET, TokenDurationFor.Verification);
     user.setVerificationToken(token);
-    const emailData = generateVerificationEmail(dbUser.email, dbUser.displayName, token);
+    const emailData = generateVerificationEmail(dbUser.email, dbUser.displayName, token, locale);
     await sendEmail(emailData);
 }
 
@@ -59,8 +68,33 @@ export const getAuthorizedUser = async (data: UserAuthData): Promise<UserData> =
 
 export const getAuthorizedAndVerifiedUser = async (data: UserAuthData): Promise<UserData> => {
     const user = await getAuthorizedUser(data);
-    if (!user.isVerified) throw new ForbiddenError("User is not verified", ErrorNames.UserNotVerified);
+    if (!user.isVerified) throw new BadRequestError("User is not verified", ErrorNames.UserNotVerified);
     return user;
+}
+
+export const getUserById = async (id: number): Promise<UserData> => {
+    const user = new User({ id });
+    const dbUser = await user.getById();
+    if (!dbUser) throw new NotFoundError("User not found", ErrorNames.UserNotFound);
+    return dbUser;
+}
+
+export const getUserByEmail = async (email: string): Promise<UserData> => {
+    const user = new User({ email });
+    const dbUser = await user.getById();
+    if (!dbUser) throw new NotFoundError("User not found", ErrorNames.UserNotFound);
+    return dbUser;
+}
+
+export const sendPasswordResetEmail = async (email: string, locale: keyof typeof Locales): Promise<void> => {
+    const user = new User({ email });
+    const dbUser = await user.getByEmail();
+    if (!dbUser) throw new BadRequestError("User not found", ErrorNames.UserNotFound);
+    if (dbUser.googleId || dbUser.facebookId) throw new BadRequestError("Password reset is not possible", ErrorNames.SocialUserForgotPassword);
+    const token = createToken(dbUser.id, process.env.VERIFICATION_TOKEN_SECRET, TokenDurationFor.PasswordReset);
+    user.sePasswordResetToken(token);
+    const emailData = generatePasswordResetEmail(dbUser.email, dbUser.displayName, token, locale);
+    await sendEmail(emailData);
 }
 
 export const resetPasswordService = async (data: UserResetPasswordData): Promise<UserData> => {
@@ -97,7 +131,7 @@ export const loginCheckService = async (tokenData: UserLoginTokenData): Promise<
         newAccessToken = await obtainAccessTokenFromRefreshToken(refreshToken);
         validAccessTokenData = verifyTokenData(newAccessToken, ACCESS_TOKEN_SECRET);
     }
-    
+
     const user = new User(validAccessTokenData);
     const dbUser = await user.getById();
     if (!dbUser) throw new BadRequestError("User not found", ErrorNames.UserNotFound);
@@ -108,4 +142,43 @@ export const loginCheckService = async (tokenData: UserLoginTokenData): Promise<
         accessToken: newAccessToken,
         social: validAccessTokenData.social
     };
+}
+
+export const updateUser = async (id: number, { displayName, currentPassword, password }: UserEditRequestData): Promise<UserData> => {
+    let encryptedPassword: string = null;
+    if (currentPassword) {
+        encryptedPassword = await encryptPasswordAsync(password);
+    }
+    const user = new User({ id, displayName, password: encryptedPassword });
+    const dbUser = await user.getById();
+    if (!dbUser) throw new BadRequestError("User not found", ErrorNames.UserNotFound);
+
+    if (currentPassword) {
+        const isPasswordCorrect = await checkPasswordAsync(currentPassword, dbUser.password);
+        if (!isPasswordCorrect) throw new UnauthorizedError("Password is incorrect", ErrorNames.WrongPassword);
+    }
+
+    const updatedUser = await user.updateById();
+    return updatedUser;
+}
+
+export const deleteAccountEmailRequest = async (id: number, locale: keyof typeof Locales) => {
+    const user = new User({ id });
+    const dbUser = await user.getById();
+    if (!dbUser) throw new BadRequestError("User not found", ErrorNames.UserNotFound);
+    const token = createToken(dbUser.id, VERIFICATION_TOKEN_SECRET, TokenDurationFor.DeleteAccount);
+    user.setVerificationToken(token);
+    const emailData = generateDeleteAccountEmail(dbUser.email, dbUser.displayName, token, locale);
+    await sendEmail(emailData);
+    return user;
+}
+
+
+export const deleteUser = async (data: UserVerificationData): Promise<UserData> => {
+    const tokenData: DecodedTokenData = getVerifiedData(data.token, VERIFICATION_TOKEN_SECRET);
+    const user = new User({ id: tokenData.id });
+    const dbUser = await user.getById();
+    if (!dbUser) throw new BadRequestError("User not found", ErrorNames.UserNotFound);
+    if (dbUser.verificationToken !== data.token) throw new BadRequestError("Verification token is invalid", ErrorNames.InvalidToken);
+    return await user.deleteById();
 }

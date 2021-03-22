@@ -2,7 +2,7 @@ import Joi from "joi";
 import BadRequestError from "../../errors/BadRequestError";
 import { ErrorNames } from "../../types/error";
 import { capitalizeFirstLetter } from "../../utils/stringUtils";
-import { UserInstanceData } from "../user/user.types";
+import { UserInstanceData } from "./auth.types";
 
 type ValidationSchemas = {
     [schema: string]: Joi.ObjectSchema

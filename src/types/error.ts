@@ -18,4 +18,5 @@ export enum ErrorNames {
     Validation = 'ValidationError',
     MailSend = 'MailSendError',
     SocialUserForgotPassword = 'SocialUserForgotPasswordError',
+    DuplicatePlayerName = 'DuplicatePlayerNameError',
 }

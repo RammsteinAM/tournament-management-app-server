@@ -1,5 +1,6 @@
 import prisma from "../../../prisma/prisma";
-import { UserData, UserEditData, UserInstanceData } from "./user.types";
+import { UserData, UserEditData, UserInstanceData } from "./auth.types";
+
 export default class User {
     id: number;
     email: string;
@@ -18,16 +19,16 @@ export default class User {
         this.facebookId = data.facebookId;
     }
 
-    async findByEmail(): Promise<boolean> {
-        return !!await prisma.user.findUnique({ where: { email: this.email } });
-    }
+    // async findByEmail(): Promise<boolean> {
+    //     return !!await prisma.user.findUnique({ where: { email: this.email } });
+    // }
 
     async getById(): Promise<UserData> {
         return await prisma.user.findUnique({ where: { id: this.id } });
     }
 
     async getByEmail(): Promise<UserData> {
-        return await prisma.user.findUnique({ where: { email: this.email } });
+        return await prisma.user.findFirst({ where: { email: {equals: this.email, mode: 'insensitive'}},  });
     }
 
     async getByGoogleId(): Promise<UserData> {
@@ -102,17 +103,16 @@ export default class User {
     }
 
     async verify(): Promise<UserData> {
-        // return await verifyUserService({ token: this.token })
         return await prisma.user.update({
             where: { id: this.id },
-            data: { isVerified: true }
+            data: {
+                isVerified: true,
+                verificationToken: ''
+            }
         });
     }
 
     async updateById(): Promise<UserData> {
-        // let data: UserEditData;
-        // if (this.displayName) data = { displayName: this.displayName };
-        // if (this.password) data = { password: this.password };
         return await prisma.user.update({
             where: {
                 id: this.id
@@ -131,5 +131,4 @@ export default class User {
             }
         })
     }
-
 }

@@ -1,9 +1,9 @@
 import { asyncWrapper } from "../../utils/asyncWrapper";
-import { SocialUserLoginData, UserLoginData } from "../user/user.types";
+import { SocialUserLoginData, UserLoginData } from "../auth/auth.types";
 import { Request, Response } from "express";
 import { StatusCodesOkay } from "../../types/status";
 import { registerOrLoginFacebookUser, registerOrLoginGoogleUser } from "./social.service";
-import { ReqBody as ResBody } from "../../types/main";
+import { ResBody as ResBody } from "../../types/main";
 import { GoogleUserData } from "./social.types";
 
 export const googleLoginOrRegister = asyncWrapper(async (req: Request, res: Response): Promise<void> => {

@@ -1,6 +1,6 @@
 import * as jwt from "jsonwebtoken";
 import UnauthorizedError from "../errors/UnauthorizedError";
-import { DecodedTokenData } from "../modules/user/user.types";
+import { DecodedTokenData } from "../modules/auth/auth.types";
 import { ErrorNames } from "../types/error";
 import { TokenDurationFor } from "../types/main";
 

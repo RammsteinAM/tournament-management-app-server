@@ -18,7 +18,7 @@ export const emailLocalizations: EmailLocalization = {
             `Dear ${name},
 
             Please click on the button below to reset your password.
-            If you didn't request a password reset, simply ignore this email.`
+            If you did not request a password reset, simply ignore this email.`
         ),
         deleteAccountButtonText: "Delete my Account",
         deleteAccountSubject: `${appName} - Delete Account`,
@@ -27,7 +27,7 @@ export const emailLocalizations: EmailLocalization = {
 
             We received your request to delete your ${appName} account.
             Please note that all your ${appName} data will be permanently deleted.
-            If you're sure you want it to happen, please click on the button below.`
+            If you are sure you want it to happen, please click on the button below.`
         ),
         accountDeletedSubject: `${appName} - Account Deleted`,
         accountDeletedMessage: `Your ${appName} account has been successfully deleted.`,

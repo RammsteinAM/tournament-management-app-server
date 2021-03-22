@@ -4,11 +4,10 @@ import { ErrorNames } from '../types/error';
 import { EmailMessage, EmailWithButtonMessage, Locales } from '../types/main';
 import { mailSendRoutes } from './constants';
 import { emailLocalizations } from './localizationUtils';
+
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-export const generateVerificationEmail = (email: string, displayName: string, token: string) => {
-    const langCode = process.env.LOCALE || Locales.en;
-    const locale: keyof typeof Locales = Locales[langCode as Locales];
+export const generateVerificationEmail = (email: string, displayName: string, token: string, locale: keyof typeof Locales) => {
     const name = displayName || email;
 
     const message: EmailWithButtonMessage = {
@@ -25,9 +24,7 @@ export const generateVerificationEmail = (email: string, displayName: string, to
     return message;
 }
 
-export const generatePasswordResetEmail =   (email: string, displayName: string, token: string) => {
-    const langCode = process.env.LOCALE || Locales.en;
-    const locale: keyof typeof Locales = Locales[langCode as Locales];
+export const generatePasswordResetEmail =   (email: string, displayName: string, token: string, locale: keyof typeof Locales) => {
     const name = displayName || email;
 
     const message: EmailWithButtonMessage = {
@@ -44,9 +41,7 @@ export const generatePasswordResetEmail =   (email: string, displayName: string,
     return message;
 }
 
-export const generateDeleteAccountEmail = (email: string, displayName: string, token: string) => {
-    const langCode = process.env.LOCALE || Locales.en;
-    const locale: keyof typeof Locales = Locales[langCode as Locales];
+export const generateDeleteAccountEmail = (email: string, displayName: string, token: string, locale: keyof typeof Locales) => {
     const name = displayName || email;
 
     const message: EmailWithButtonMessage = {
@@ -63,9 +58,7 @@ export const generateDeleteAccountEmail = (email: string, displayName: string, t
     return message;
 }
 
-export const generateAccountDeletedEmail = (email: string, displayName: string, token: string) => {
-    const langCode = process.env.LOCALE || Locales.en;
-    const locale: keyof typeof Locales = Locales[langCode as Locales];
+export const generateAccountDeletedEmail = (email: string, displayName: string, locale: keyof typeof Locales) => {
     const name = displayName || email;
 
     const message: EmailMessage = {
@@ -75,7 +68,6 @@ export const generateAccountDeletedEmail = (email: string, displayName: string, 
         dynamicTemplateData: {
             subject: emailLocalizations[locale].accountDeletedSubject,
             message: emailLocalizations[locale].accountDeletedMessage,
-            link: `${mailSendRoutes.deleteAccount}${token}`
         }
     }
     return message;

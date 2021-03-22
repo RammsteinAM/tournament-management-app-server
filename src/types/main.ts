@@ -42,16 +42,17 @@ export interface EmailWithButtonMessage {
 interface EmailDynamicTemplateData {
     subject: string;
     message: string;
-    link: string
 }
 
 interface EmailWithButtonDynamicTemplateData extends EmailDynamicTemplateData {
+    link: string;
     btnText: string;
 }
 
-export type AuthRequest<T = core.ParamsDictionary> = Request<T>
+export type RequestWithUserId<T = core.ParamsDictionary> = Request<T>
     & { userId: number }
-export interface ReqBody<DataType = undefined> {
+
+export interface ResBody<DataType = undefined> {
     success: boolean;
     data?: DataType;
     message?: string;
@@ -62,5 +63,6 @@ export enum TokenDurationFor {
     Verification = "5m",
     Access = "20m",
     PasswordReset = "30m",
+    DeleteAccount = "30m",
     Refresh = "180d",
 }

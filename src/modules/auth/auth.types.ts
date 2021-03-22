@@ -1,3 +1,5 @@
+import { PlayerData } from "../player/player.types";
+
 export interface UserCreateData {
     email: string;
     password: string;
@@ -26,6 +28,8 @@ export interface UserPasswordResetData {
     email: string;
 }
 
+export type EmailCheckData = UserPasswordResetData;
+
 export interface UserData {
     id: number;
     email: string;
@@ -36,6 +40,7 @@ export interface UserData {
     facebookId?: string;
     verificationToken?: string;
     passwordResetToken?: string;
+    players?: PlayerData[];
     createdAt: Date;
     updatedAt: Date;
 }
