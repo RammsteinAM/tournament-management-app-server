@@ -3,13 +3,10 @@ import { asyncWrapper } from "../../utils/asyncWrapper";
 import * as tournamentService from './tournament.service';
 import { StatusCodesOkay } from '../../types/status';
 import { RequestWithUserId, ResBody } from '../../types/main';
-import { TournamentCreateData, TournamentCreationData, TournamentData } from "./tournament.types";
+import { TournamentCreateData, TournamentResData, TournamentData, TournamentUpdateData, TournamentDeleteData } from "./tournament.types";
+import Tournament from "./tournament.model";
 
 export const getTournaments = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
-
-    // const user = new User({ id: 70 })
-    // const userData = await user.getUserById();
-    // const { id } = req.params;
     const data = await tournamentService.getUserTournaments(req.userId);
     res.status(StatusCodesOkay.OK).json({
         success: true,
@@ -18,9 +15,6 @@ export const getTournaments = asyncWrapper(async (req: RequestWithUserId, res: R
 })
 
 export const getTournament = asyncWrapper(async (req: RequestWithUserId<{ id: number }>, res: Response): Promise<void> => {
-
-    // const user = new User({ id: 70 })
-    // const userData = await user.getUserById();
     const { id } = req.params;
     const data = await tournamentService.getTournamentById(parseInt(`${id}`, 10), req.userId);
     res.status(StatusCodesOkay.OK).json({
@@ -31,8 +25,8 @@ export const getTournament = asyncWrapper(async (req: RequestWithUserId<{ id: nu
 
 export const createTournament = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
     const data = req.body as TournamentCreateData;
-    const { id, name, userId, sets, goalsToWin, draw, numberOfGoals, pointsForDraw, pointsForWin, createdAt } = await tournamentService.createTournament(data);
-    const resBody: ResBody<TournamentCreationData> = {
+    const { id, name, userId, sets, goalsToWin, draw, numberOfGoals, pointsForDraw, pointsForWin, createdAt } = await tournamentService.createTournament({ ...data, userId: req.userId });
+    const resBody: ResBody<TournamentResData> = {
         success: true,
         data: { id, name, userId, sets, goalsToWin, draw, numberOfGoals, pointsForDraw, pointsForWin, createdAt },
     };
@@ -40,16 +34,21 @@ export const createTournament = asyncWrapper(async (req: RequestWithUserId, res:
 });
 
 export const editTournament = asyncWrapper(async (req: RequestWithUserId<{ id: number }>, res: Response): Promise<void> => {
-    // const { id } = req.params;
-    // const data = req.body as UserEditRequestData;
-    // if (!data.displayName && !data.currentPassword) throw new BadRequestError();
-    // if (data.currentPassword) {
-    //     validateUserUpdate(data);
-    // }
-    // const { email, displayName } = await userService.updateUser(parseInt(`${id}`, 10), data);
+    const data = req.body as TournamentUpdateData;
+    const { id, name, userId, sets, goalsToWin, draw, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt } = await tournamentService.updateTournament({ ...data, userId: req.userId });
+    const resBody: ResBody<TournamentResData> = {
+        success: true,
+        data: { id, name, userId, sets, goalsToWin, draw, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt },
+    };
+    res.status(StatusCodesOkay.OK).json(resBody);
+})
 
-    // res.status(StatusCodesOkay.OK).json({
-    //     success: true,
-    //     data: { id, email, displayName },
-    // });
+export const deleteTournament = asyncWrapper(async (req: RequestWithUserId<{ id: string }>, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { id: deletedId } = await tournamentService.deleteTournament({ id: parseInt(id, 10), userId: req.userId });
+    const resBody: ResBody<{ id: number }> = {
+        success: true,
+        data: { id: deletedId },
+    };
+    res.status(StatusCodesOkay.OK).json(resBody);
 })

@@ -41,20 +41,24 @@ export default class Tournament {
                 name: this.name,
                 sets: this.sets,
                 draw: this.draw,
-
+                numberOfGoals: this.numberOfGoals,
+                numberOfLives: this.numberOfLives,
+                pointsForWin: this.pointsForWin,
+                pointsForDraw: this.pointsForDraw,
+                user: {
+                    connect: { id: this.userId }
+                },
                 tournamentType: {
-                    connect: { id: 1 }
-                } /* { name: this.name } */,
-
-                //name: this.name,
+                    connect: { id: this.tournamentTypeId }
+                },
             }
         });
     }
 
     async updateById(): Promise<TournamentData> {
-        return await prisma.tournament.create({
-            data:
-            {
+        return await prisma.tournament.update({
+            where: { id: this.id },
+            data: {
                 name: this.name,
                 sets: this.sets,
                 numberOfGoals: this.numberOfGoals,
@@ -62,20 +66,23 @@ export default class Tournament {
                 numberOfLives: this.numberOfLives,
                 pointsForWin: this.pointsForWin,
                 pointsForDraw: this.pointsForDraw,
-                tournamentType: {
-                    connect: { id: this.tournamentTypeId }
-                } /* { name: this.name } */,
-
-                //name: this.name,
             }
         });
     }
 
 
-    async deleteById(): Promise<TournamentData> {
+    async deleteById(): Promise<{ id: number }> {
+        await prisma.game.deleteMany({
+            where: {
+                tournamentId: this.id
+            }
+        })
         return await prisma.tournament.delete({
             where: {
                 id: this.id
+            },
+            select: {
+                id: true
             }
         })
     }

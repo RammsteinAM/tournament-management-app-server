@@ -9,22 +9,40 @@ export interface TournamentCreateData {
     tournamentTypeId: number;
     numberOfGoals?: number;
     draw?: boolean;
-    thirdPlace?: boolean;    
+    thirdPlace?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
 }
 
-export interface TournamentCreationData {
+export interface TournamentUpdateData {
+    userId: number;
+    id: number;
+    name?: string;
+    sets?: number;
+    numberOfGoals?: number;
+    draw?: boolean;
+    thirdPlace?: boolean;
+    pointsForWin?: number,
+    pointsForDraw?: number;
+}
+
+export interface TournamentDeleteData {
+    userId: number;
+    id: number;
+}
+
+export interface TournamentResData {
     id: number;
     userId: number;
     name: string;
-    sets: number;
+    sets?: number;
     goalsToWin?: number;
     numberOfGoals?: number;
-    draw?: boolean;  
+    draw?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
-    createdAt: Date;
+    createdAt?: Date;    
+    updatedAt?: Date;
 }
 
 export interface TournamentData {
@@ -34,7 +52,7 @@ export interface TournamentData {
     sets?: number;
     goalsToWin?: number;
     numberOfGoals?: number;
-    draw?: boolean;  
+    draw?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
     games?: GamesData;
@@ -42,15 +60,15 @@ export interface TournamentData {
     updatedAt: Date;
 }
 
-export type Tournaments = TournamentData[];
+export type TournamentsNormalizedData = { [id: number]: TournamentData };
 
 export interface TournamentInstanceData {
     id?: number;
     userId: number;
-    name?: string;  
+    name?: string;
     sets?: number;
     numberOfGoals?: number;
-    draw?: boolean;  
+    draw?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
     players?: Players;
@@ -64,15 +82,6 @@ export interface Player {
 }
 
 export type Players = Player[];
-
-// export interface Game {
-//     id: number;
-//     tournamentId: number;
-//     scores: Scores;
-//     round: number;
-// }
-
-// export type Games = Game[];
 
 export interface Score {
     id: number;
