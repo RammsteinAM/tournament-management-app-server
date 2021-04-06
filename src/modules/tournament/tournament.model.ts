@@ -1,5 +1,5 @@
 import prisma from "../../../prisma/prisma";
-import { GamesData } from "../game/game.types";
+import { GamesData, GamesResData, TournamentGameCreateData } from "../game/game.types";
 import { TournamentData, TournamentInstanceData, Players } from "./tournament.types";
 export default class Tournament {
     id: number;
@@ -12,7 +12,7 @@ export default class Tournament {
     pointsForDraw: number;
     draw: boolean;
     // players: Players;
-    games: GamesData;
+    games: TournamentGameCreateData;
     tournamentTypeId: number;
     constructor(data: TournamentInstanceData) {
         this.id = data.id;
@@ -27,7 +27,37 @@ export default class Tournament {
     }
 
     async getById(): Promise<TournamentData> {
-        return await prisma.tournament.findUnique({ where: { id: this.id } });
+        return await prisma.tournament.findUnique({
+            where: { id: this.id },
+            select: {
+                id: true,
+                name: true,
+                numberOfGoals: true,
+                numberOfLives: true,
+                numberOfTables: true,
+                pointsForDraw: true,
+                pointsForWin: true,
+                sets: true,
+                tournamentType: true,
+                createdAt: true,
+                updatedAt: true,
+                userId: true,
+                draw: true,
+                tournamentTypeId: true,
+                games: {
+                    select: {
+                        id: true,
+                        index: true,
+                        player1: { select: { id: true } },
+                        player2: { select: { id: true } },
+                        scores1: true,
+                        scores2: true,
+                        hasByePlayer: true,
+                    }
+                }
+            }
+
+        });
     }
 
     async getAll(): Promise<TournamentData[]> {
@@ -36,8 +66,7 @@ export default class Tournament {
 
     async create(): Promise<TournamentData> {
         return await prisma.tournament.create({
-            data:
-            {
+            data: {
                 name: this.name,
                 sets: this.sets,
                 draw: this.draw,
@@ -51,6 +80,57 @@ export default class Tournament {
                 tournamentType: {
                     connect: { id: this.tournamentTypeId }
                 },
+                games: this.games,
+            },
+            select: {
+                id: true,
+                name: true,
+                numberOfGoals: true,
+                numberOfLives: true,
+                numberOfTables: true,
+                pointsForDraw: true,
+                pointsForWin: true,
+                sets: true,
+                tournamentType: true,
+                createdAt: true,
+                updatedAt: true,
+                userId: true,
+                draw: true,
+                tournamentTypeId: true,
+                games: {
+                    select: {
+                        id: true,
+                        index: true,
+                        player1: { select: { id: true } },
+                        player2: { select: { id: true } },
+                        scores1: true,
+                        scores2: true,
+                        hasByePlayer: true,
+                    }
+                }
+            }
+        });
+    }
+
+    async createGames(): Promise<GamesResData> {
+        return await prisma.tournament.update({
+            where: { id: this.id },
+            data: {
+                games: this.games,
+            },
+            select: {
+                id: true,
+                games: {
+                    select: {
+                        id: true,
+                        index: true,
+                        player1: { select: { id: true } },
+                        player2: { select: { id: true } },
+                        scores1: true,
+                        scores2: true,
+                        hasByePlayer: true,
+                    }
+                }
             }
         });
     }
@@ -69,7 +149,6 @@ export default class Tournament {
             }
         });
     }
-
 
     async deleteById(): Promise<{ id: number }> {
         await prisma.game.deleteMany({

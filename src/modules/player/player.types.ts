@@ -34,15 +34,11 @@ export interface PlayerInstanceData {
     id?: number;
     userId: number;
     name?: string;
+}
+
+export interface PlayersInstanceData {
+    userId: number;
     names?: string[];
-    sets?: number;
-    goalsToWin?: number;
-    draw?: boolean;
-    thirdPlace?: boolean;    
-    pointsForWin?: number,
-    pointsForDraw?: number;
-    //games?: Games;
-    tournamentTypeId?: number;
 }
 
 export interface Player {

@@ -1,6 +1,7 @@
-import { UserData, UserEditRequestData } from "../auth/auth.types";
+import { generateGameCreateData } from "../../helpers";
+import { GamesData, GamesResData, TournamentGameCreateData } from "../game/game.types";
 import Tournament from "./tournament.model";
-import { TournamentCreateData, TournamentData, TournamentDeleteData, TournamentsNormalizedData, TournamentUpdateData } from "./tournament.types";
+import { GamesCreateData, TournamentCreateData, TournamentData, TournamentDeleteData, TournamentsNormalizedData, TournamentUpdateData } from "./tournament.types";
 
 export const getUserTournaments = async (userId: number): Promise<TournamentsNormalizedData> => {
     const tournament = new Tournament({ userId });
@@ -23,7 +24,8 @@ export const getTournamentTypeId = async (id: number, userId: number): Promise<T
 };
 
 export const createTournament = async (data: TournamentCreateData): Promise<TournamentData> => {
-    const tournament = new Tournament(data);
+    const gameCreateData = generateGameCreateData(data.games);
+    const tournament = new Tournament({ ...data, games: gameCreateData });
     return await tournament.create();
 }
 
@@ -32,7 +34,13 @@ export const updateTournament = async (data: TournamentUpdateData): Promise<Tour
     return await tournament.updateById();
 };
 
-export const deleteTournament = async (data: TournamentDeleteData): Promise<{id: number}> => {
+export const deleteTournament = async (data: TournamentDeleteData): Promise<{ id: number }> => {
     const tournament = new Tournament(data);
     return await tournament.deleteById();
+}
+
+export const createTournamentGames = async (data: GamesCreateData): Promise<GamesResData> => {
+    const gameCreateData = generateGameCreateData(data.games);
+    const tournament = new Tournament({ id: data.tournamentId, userId: data.userId, games: gameCreateData });
+    return await tournament.createGames();
 }

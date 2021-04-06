@@ -1,19 +1,14 @@
 import prisma from "../../../prisma/prisma";
 import { UserData } from "../auth/auth.types";
-import { PlayerData, PlayerInstanceData } from "./player.types";
-export default class Player {
+import { PlayerData, PlayerInstanceData, PlayersInstanceData } from "./player.types";
+export class Player {
     id: number;
     userId: number;
     name: string;
-    names: string[];
-    // players: Players;
-    // games: Games;
     constructor(data: PlayerInstanceData) {
         this.id = data.id;
         this.userId = data.userId;
         this.name = data.name;
-        this.names = data.names;
-        // this.games = data.games;
     }
 
     async getByName(): Promise<PlayerData> {
@@ -40,6 +35,40 @@ export default class Player {
         });
     }
 
+    async updateById(): Promise<PlayerData> {
+        return await prisma.player.update({
+            where: {
+                id: this.id
+            },
+            data:
+            {
+                name: this.name,
+            }
+        });
+    }
+
+    async deleteById(): Promise<PlayerData> {
+        return await prisma.player.delete({
+            where: {
+                id: this.id
+            }
+        })
+    }
+
+}
+
+export class Players {
+    userId: number;
+    names: string[];
+    constructor(data: PlayersInstanceData) {
+        this.userId = data.userId;
+        this.names = data.names;
+    }
+
+    async getUserPlayers(): Promise<PlayerData[]> {
+        return await prisma.player.findMany({ where: { userId: this.userId } });
+    }
+
     // async createMany(): Promise<any> {
     //     return await prisma.player.createMany({
     //         data: this.players
@@ -60,26 +89,4 @@ export default class Player {
             }
         });
     }
-
-    async updateById(): Promise<PlayerData> {
-        return await prisma.player.update({
-            where: {
-                id: this.id
-            },
-            data:
-            {
-                name: this.name,
-            }
-        });
-    }
-
-
-    async deleteById(): Promise<PlayerData> {
-        return await prisma.player.delete({
-            where: {
-                id: this.id
-            }
-        })
-    }
-
 }

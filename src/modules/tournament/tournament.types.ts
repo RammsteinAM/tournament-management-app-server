@@ -1,22 +1,23 @@
-import { GamesData } from "../game/game.types";
+import { GameConnectionData, GameCreateData, GameInsertData, GamesData, TournamentGameCreateData } from "../game/game.types";
 
 export type TournamentDataWithUserId<T> = T & { userId: number }
 
 export interface TournamentCreateData {
+    tournamentTypeId: number;
     userId: number;
     name: string;
     sets: number;
-    tournamentTypeId: number;
     numberOfGoals?: number;
     draw?: boolean;
     thirdPlace?: boolean;
-    pointsForWin?: number,
+    pointsForWin?: number;
     pointsForDraw?: number;
+    games?: GameInsertData[];
 }
 
 export interface TournamentUpdateData {
-    userId: number;
     id: number;
+    userId: number;
     name?: string;
     sets?: number;
     numberOfGoals?: number;
@@ -43,6 +44,7 @@ export interface TournamentResData {
     pointsForDraw?: number;
     createdAt?: Date;    
     updatedAt?: Date;
+    games: GamesData;
 }
 
 export interface TournamentData {
@@ -60,6 +62,11 @@ export interface TournamentData {
     updatedAt: Date;
 }
 
+// export interface TournamentCreateGamesData {
+//     id: number;
+//     games?: GamesData;
+// }
+
 export type TournamentsNormalizedData = { [id: number]: TournamentData };
 
 export interface TournamentInstanceData {
@@ -72,7 +79,7 @@ export interface TournamentInstanceData {
     pointsForWin?: number,
     pointsForDraw?: number;
     players?: Players;
-    games?: GamesData;
+    games?: TournamentGameCreateData;
     tournamentTypeId?: number;
 }
 
@@ -83,9 +90,8 @@ export interface Player {
 
 export type Players = Player[];
 
-export interface Score {
-    id: number;
-    name: string;
+export interface GamesCreateData {
+    userId: number;
+    tournamentId: number;
+    games: GameInsertData[];
 }
-
-export type Scores = Score[];

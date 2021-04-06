@@ -37,8 +37,8 @@ model Tournament {
   draw             Boolean?
   pointsForWin     Int?
   pointsForDraw    Int?
-  user             User?          @relation(fields: [userId], references: [id])
-  userId           Int?
+  user             User           @relation(fields: [userId], references: [id])
+  userId           Int
   tournamentType   TournamentType @relation(fields: [tournamentTypeId], references: [id])
   tournamentTypeId Int
   games            Game[]
@@ -60,9 +60,6 @@ model Player {
   games1    Game[]   @relation("p1")
   games2    Game[]   @relation("p2")
   isDeleted Boolean?
-  // tournament   Tournament @relation(fields: [tournamentId], references: [id])
-  // tournamentId Int
-  // scores       Score[]
 }
 
 model Game {
@@ -71,53 +68,8 @@ model Game {
   tournamentId Int
   player1      Player[]   @relation("p1")
   player2      Player[]   @relation("p2")
-  // player1      Player[]   @relation("p1", fields: [player1Id], references: [id])
-  // player2      Player[]   @relation("p2", fields: [player2Id], references: [id])
-  // player1Id    Int[]
-  // player2Id    Int[]
   scores1      Int[]
   scores2      Int[]
-  // scores       Score[]
+  hasByePlayer Boolean?
   index        String
 }
-
-// model Player {
-//   id           Int           @id @default(autoincrement())
-//   name         String
-//   user         User?         @relation(fields: [userId], references: [id])
-//   userId       Int?
-//   // games1 Game[] @relation("participant1")
-//   // games2 Game[] @relation("participant2")
-//   participant1 Participant[] @relation("player")
-//   participant2 Participant[] @relation("teammate")
-
-// }
-
-// model Participant {
-//   id           Int        @id @default(autoincrement())
-//   name         String
-//   tournament   Tournament @relation(fields: [tournamentId], references: [id])
-//   tournamentId Int
-//   player       Player     @relation("player", fields: [playerId], references: [id])
-//   playerId     Int
-//   teammate     Player     @relation("teammate", fields: [teammateId], references: [id])
-//   teammateId   Int
-//   games1       Game[]     @relation("participant1")
-//   games2       Game[]     @relation("participant2")
-// }
-
-// model Game {
-//   id             Int         @id @default(autoincrement())
-//   tournament     Tournament  @relation(fields: [tournamentId], references: [id])
-//   tournamentId   Int
-//   // player1      Player[]   @relation("p1")
-//   // player2      Player[]   @relation("p2")
-//   participant1   Participant @relation("participant1", fields: [participant1Id], references: [id])
-//   participant2   Participant @relation("participant2", fields: [participant2Id], references: [id])
-//   participant1Id Int[]
-//   participant2Id Int[]
-//   scores1        Int[]
-//   scores2        Int[]
-//   // scores       Score[]
-//   index          String
-// }

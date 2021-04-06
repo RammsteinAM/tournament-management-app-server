@@ -4,45 +4,75 @@ export type TournamentDataWithUserId<T> = T & { userId: number }
 export interface GameCreateData {
     userId: number;
     tournamentId: number;
+    
 }
 
-export interface GamesCreateData {
-    userId: number;
-    tournamentId: number;
+export interface GameInsertData {
+    index: string;
+    player1?: { id: number }[],
+    player2?: { id: number }[],
+    scores1?: number[];
+    scores2?: number[];
+    hasByePlayer?: boolean;
 }
 
 export interface GameCreationData {
     id: number;
     userId?: number;
-    name: string;
-    winningSets: number;
-    goalsToWin: number;
     playerIds: number[];
-    gameIds: number[];
 }
 
 export interface GameData {
     id: number;
-    // userId: number;
     index: string;
+    player1?: { id: number }[],
+    player2?: { id: number }[],
+    scores1?: number[];
+    scores2?: number[];
+    hasByePlayer?: boolean;
+    tournamentId?: number;
 }
 
 export type GamesData = GameData[];
 
+export type GamesResData = { [tournamentId: number]: GamesData }
+
+export type GameUpdateData = Omit<GameData, 'index'>
+
 export interface GameInstanceData {
     id?: number;
-    userId: number;
+    userId?: number;
     tournamentId?: number;
-    player1Ids?: [number, number?];
-    player2Ids?: [number, number?];
+    player1?: { id: number }[],
+    player2?: { id: number }[],
     scores1?: number[];
     scores2?: number[];
-    indexes?: string[];
-    sets?: number;
-    goalsToWin?: number;
-    draw?: boolean;
-    thirdPlace?: boolean;    
-    pointsForWin?: number,
-    pointsForDraw?: number;
-    tournamentTypeId?: number;
+    hasByePlayer?: boolean;
+    index?: string;
+}
+
+export interface GameCreateConnectionData {
+    index: string;
+    player1?: { connect: { id: number }[], }
+    player2?: { connect: { id: number }[], }
+    scores1?: number[];
+    scores2?: number[];
+    hasByePlayer?: boolean;
+}
+
+export interface GameUpdateConnectionData {
+    index: string;
+    player1?: { set: { id: number }[], }
+    player2?: { set: { id: number }[], }
+    scores1?: number[];
+    scores2?: number[];
+    hasByePlayer?: boolean;
+}
+
+export interface TournamentGameCreateData {
+    create: GameCreateConnectionData[]
+}
+
+export interface TournamentGameUpdateData {
+    create: GameUpdateConnectionData[]
 }

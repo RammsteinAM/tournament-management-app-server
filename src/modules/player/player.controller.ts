@@ -26,20 +26,20 @@ export const getPlayer = asyncWrapper(async (req: RequestWithUserId<{ id: number
 })
 
 export const createPlayer = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
-    const data = req.body as PlayerCreateData;
-    //cosnt tournamentTypeId = await tournamentService.getTournamentTypeId()
-    const { id, name, userId } = await playerService.createPlayer(data);
-    const resBody: ResBody<TournamentCreationData> = {
-        success: true,
-        // data: { id, name, userId, winningSets, goalsToWin, },
-    };
-    res.status(StatusCodesOkay.Created).json(resBody);
+    // const data = req.body as PlayerCreateData;
+    // //cosnt tournamentTypeId = await tournamentService.getTournamentTypeId()
+    // const { id, name, userId } = await playerService.createPlayer(data);
+    // const resBody: ResBody<TournamentCreationData> = {
+    //     success: true,
+    //     // data: { id, name, userId, winningSets, goalsToWin, },
+    // };
+    // res.status(StatusCodesOkay.Created).json(resBody);
 });
 
 export const createPlayers = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
-    const creationData = req.body as PlayersCreateData;
+    const creationData = req.body as string[];
     //cosnt tournamentTypeId = await tournamentService.getTournamentTypeId()
-    const newPlayersList = await playerService.createPlayers(req.body, req.userId);
+    const newPlayersList = await playerService.createPlayers(creationData, req.userId);
     const resBody: ResBody<PlayerData[]> = {
         success: true,
         data: newPlayersList

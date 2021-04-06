@@ -1,13 +1,13 @@
 import BadRequestError from "../../../src/errors/BadRequestError";
 import { UserData, UserEditRequestData } from "../auth/auth.types";
 import { checkPasswordAsync, encryptPasswordAsync } from "../../utils/encryption";
-import Player from "./player.model";
+import { Player, Players } from "./player.model";
 import UnauthorizedError from "../../errors/UnauthorizedError";
 import { createToken } from "../../utils/jwtTokenUtils";
 import { TokenDurationFor } from "../../types/main";
 import { generatePasswordResetEmail, sendEmail } from "../../utils/emailUtils";
 import { ErrorNames } from "../../types/error";
-import { PlayerCreateData, PlayerData, Players } from "./player.types";
+import { PlayerCreateData, PlayerData } from "./player.types";
 import prisma from "../../../prisma/prisma";
 
 export const getUserPlayers = async (userId: number): Promise<PlayerData[]> => {
@@ -28,17 +28,13 @@ export const createPlayer = async ({ userId, name }: PlayerCreateData): Promise<
 }
 
 export const createPlayers = async (names: string[], userId: number): Promise<PlayerData[]> => {
-    const player = new Player({ userId });
-    //player.players = names.map(name => ({ name, userId }));
+    const player = new Players({ userId });
     const existingPlayers = await getUserPlayers(userId);
     const existingPlayerNames = existingPlayers.map(player => player.name);
-    const newPlayerNames = names.filter(name => (name && existingPlayerNames.indexOf(name) < 0));
+    const newPlayerNames = names.filter(name => (name && existingPlayerNames.indexOf(name) === -1));
     player.names = newPlayerNames;
-    const playerFound = await player.getByName();
-    // if (playerFound) throw new BadRequestError('Player with the given name already exists.', ErrorNames.DuplicatePlayerName);
     const updatedUserData = await player.createMany();
     return updatedUserData.players;
-    //return await getUserPlayers(userId);
 }
 
 export const updatePlayer = async (id: number, { displayName, currentPassword, password }: UserEditRequestData): Promise<PlayerData> => {
