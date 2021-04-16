@@ -1,14 +1,9 @@
 import BadRequestError from "../../../src/errors/BadRequestError";
-import { UserData, UserEditRequestData } from "../auth/auth.types";
-import { checkPasswordAsync, encryptPasswordAsync } from "../../utils/encryption";
-import { Player, Players } from "./player.model";
-import UnauthorizedError from "../../errors/UnauthorizedError";
-import { createToken } from "../../utils/jwtTokenUtils";
-import { TokenDurationFor } from "../../types/main";
-import { generatePasswordResetEmail, sendEmail } from "../../utils/emailUtils";
+import { UserEditRequestData } from "../auth/auth.types";
+import Player from "./player.model";
+import Players from "./players.model";
 import { ErrorNames } from "../../types/error";
 import { PlayerCreateData, PlayerData } from "./player.types";
-import prisma from "../../../prisma/prisma";
 
 export const getUserPlayers = async (userId: number): Promise<PlayerData[]> => {
     const players = new Player({ userId });
@@ -30,7 +25,7 @@ export const createPlayer = async ({ userId, name }: PlayerCreateData): Promise<
 export const createPlayers = async (names: string[], userId: number): Promise<PlayerData[]> => {
     const player = new Players({ userId });
     const existingPlayers = await getUserPlayers(userId);
-    const existingPlayerNames = existingPlayers.map(player => player.name);
+    const existingPlayerNames = existingPlayers.map(p => p.name);
     const newPlayerNames = names.filter(name => (name && existingPlayerNames.indexOf(name) === -1));
     player.names = newPlayerNames;
     const updatedUserData = await player.createMany();
@@ -38,19 +33,7 @@ export const createPlayers = async (names: string[], userId: number): Promise<Pl
 }
 
 export const updatePlayer = async (id: number, { displayName, currentPassword, password }: UserEditRequestData): Promise<PlayerData> => {
-    // let encryptedPassword: string = null;
-    // if (currentPassword) {
-    //     encryptedPassword = await encryptPasswordAsync(password);
-    // }
     const tournament = new Player({ id, userId: 1 /* userId */ });
-    // const dbUser = await user.getById();
-    // if (!dbUser) throw new BadRequestError("User not found", ErrorNames.UserNotFound);
-
-    // if (currentPassword) {
-    //     const isPasswordCorrect = await checkPasswordAsync(currentPassword, dbUser.password);
-    //     if (!isPasswordCorrect) throw new UnauthorizedError("Password is incorrect", ErrorNames.WrongPassword);
-    // }
-
     const updatedUser = await tournament.updateById();
     return updatedUser;
 };

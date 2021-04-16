@@ -1,6 +1,6 @@
 import prisma from "../../../prisma/prisma";
-import { GamesData, GamesResData, TournamentGameCreateData } from "../game/game.types";
-import { TournamentData, TournamentInstanceData, Players } from "./tournament.types";
+import { GamesResData, TournamentGameCreateData, TournamentGameUpdateData } from "../game/game.types";
+import { TournamentData, TournamentInstanceData, TournamentResData } from "./tournament.types";
 export default class Tournament {
     id: number;
     userId: number;
@@ -11,8 +11,8 @@ export default class Tournament {
     pointsForWin: number;
     pointsForDraw: number;
     draw: boolean;
-    // players: Players;
-    games: TournamentGameCreateData;
+    newGames: TournamentGameCreateData;
+    existingGames: TournamentGameUpdateData;
     tournamentTypeId: number;
     constructor(data: TournamentInstanceData) {
         this.id = data.id;
@@ -21,8 +21,8 @@ export default class Tournament {
         this.sets = data.sets;
         this.numberOfGoals = data.numberOfGoals;
         this.draw = data.draw;
-        // this.players = data.players;
-        this.games = data.games;
+        this.newGames = data.newGames;
+        this.existingGames = data.existingGames;
         this.tournamentTypeId = data.tournamentTypeId;
     }
 
@@ -80,7 +80,7 @@ export default class Tournament {
                 tournamentType: {
                     connect: { id: this.tournamentTypeId }
                 },
-                games: this.games,
+                games: this.newGames,
             },
             select: {
                 id: true,
@@ -116,7 +116,7 @@ export default class Tournament {
         return await prisma.tournament.update({
             where: { id: this.id },
             data: {
-                games: this.games,
+                games: this.newGames,
             },
             select: {
                 id: true,
@@ -149,6 +149,32 @@ export default class Tournament {
             }
         });
     }
+
+    async updateGames(): Promise<TournamentResData> {
+        return await prisma.tournament.update({
+            where: { id: this.id },
+            data: {
+                games: this.existingGames,
+            },
+            select: {
+                id: true,
+                name: true,
+                userId: true,
+                games: {
+                    select: {
+                        id: true,
+                        index: true,
+                        player1: { select: { id: true } },
+                        player2: { select: { id: true } },
+                        scores1: true,
+                        scores2: true,
+                        hasByePlayer: true,
+                    }
+                }
+            }
+        });
+    }
+
 
     async deleteById(): Promise<{ id: number }> {
         await prisma.game.deleteMany({

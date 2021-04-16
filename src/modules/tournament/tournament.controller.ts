@@ -1,12 +1,11 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { asyncWrapper } from "../../utils/asyncWrapper";
 import * as tournamentService from './tournament.service';
 import { StatusCodesOkay } from '../../types/status';
 import { RequestWithUserId, ResBody } from '../../types/main';
-import { TournamentCreateData, TournamentResData, TournamentData, TournamentUpdateData, TournamentDeleteData } from "./tournament.types";
-import Tournament from "./tournament.model";
+import { TournamentCreateData, TournamentResData, TournamentUpdateData } from "./tournament.types";
 import { GamesCreateData } from "../tournament/tournament.types";
-import { GameData, GamesResData } from "../game/game.types";
+import { GamesResData } from "../game/game.types";
 
 export const getTournaments = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
     const data = await tournamentService.getUserTournaments(req.userId);
@@ -57,7 +56,6 @@ export const deleteTournament = asyncWrapper(async (req: RequestWithUserId<{ id:
 
 export const createGames = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
     const data = req.body as GamesCreateData;
-    //cosnt tournamentTypeId = await tournamentService.getTournamentTypeId()
     const gamesData = await tournamentService.createTournamentGames(data);
     const resBody: ResBody<GamesResData> = {
         success: true,

@@ -137,7 +137,7 @@ export const getUser = asyncWrapper(async (req: RequestWithUserId, res: Response
   });
 })
 
-export const editUser = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {  
+export const editUser = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
   const data = req.body as UserEditRequestData;
   if (!data.displayName && !data.currentPassword) throw new BadRequestError();
   if (data.currentPassword) {

@@ -5,7 +5,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import path from "path";
 import cors from "cors";
-//import userRoutes from './modules/user/user.routes';
+// import userRoutes from './modules/user/user.routes';
 import authRoutes from './modules/auth/auth.routes';
 import socialRoutes from "./modules/social/social.routes";
 import tournamentRoutes from "./modules/tournament/tournament.routes";
@@ -38,7 +38,7 @@ class App {
     this.app.use(cookieParser());
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: false }));
-    //this.app.use("/api/user", userRoutes);
+    // this.app.use("/api/user", userRoutes);
     this.app.use("/api/auth", authRoutes);
     this.app.use("/api/social", socialRoutes);
     this.app.use("/api/tournament", tournamentRoutes);

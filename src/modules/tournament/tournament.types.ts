@@ -1,4 +1,4 @@
-import { GameConnectionData, GameCreateData, GameInsertData, GamesData, TournamentGameCreateData } from "../game/game.types";
+import { GameInsertData, GamesData, GameUpdateDataForMultipleGames, TournamentGameCreateData, TournamentGameUpdateData } from "../game/game.types";
 
 export type TournamentDataWithUserId<T> = T & { userId: number }
 
@@ -42,7 +42,7 @@ export interface TournamentResData {
     draw?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
-    createdAt?: Date;    
+    createdAt?: Date;
     updatedAt?: Date;
     games: GamesData;
 }
@@ -79,7 +79,8 @@ export interface TournamentInstanceData {
     pointsForWin?: number,
     pointsForDraw?: number;
     players?: Players;
-    games?: TournamentGameCreateData;
+    newGames?: TournamentGameCreateData;
+    existingGames?: TournamentGameUpdateData;
     tournamentTypeId?: number;
 }
 
@@ -94,4 +95,10 @@ export interface GamesCreateData {
     userId: number;
     tournamentId: number;
     games: GameInsertData[];
+}
+
+export interface GamesUpdateData {
+    userId: number;
+    tournamentId: number;
+    games: GameUpdateDataForMultipleGames[];
 }

@@ -19,10 +19,6 @@ export default class User {
         this.facebookId = data.facebookId;
     }
 
-    // async findByEmail(): Promise<boolean> {
-    //     return !!await prisma.user.findUnique({ where: { email: this.email } });
-    // }
-
     async getById(): Promise<UserData> {
         return await prisma.user.findUnique({ where: { id: this.id } });
     }

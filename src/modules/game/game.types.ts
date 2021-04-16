@@ -4,11 +4,20 @@ export type TournamentDataWithUserId<T> = T & { userId: number }
 export interface GameCreateData {
     userId: number;
     tournamentId: number;
-    
+
 }
 
 export interface GameInsertData {
     index: string;
+    player1?: { id: number }[],
+    player2?: { id: number }[],
+    scores1?: number[];
+    scores2?: number[];
+    hasByePlayer?: boolean;
+}
+
+export interface GameUpdateDataForMultipleGames {
+    id: number;
     player1?: { id: number }[],
     player2?: { id: number }[],
     scores1?: number[];
@@ -35,6 +44,8 @@ export interface GameData {
 
 export type GamesData = GameData[];
 
+export type NormalizedGamesData = { [index: string]: GameData };
+
 export type GamesResData = { [tournamentId: number]: GamesData }
 
 export type GameUpdateData = Omit<GameData, 'index'>
@@ -60,8 +71,7 @@ export interface GameCreateConnectionData {
     hasByePlayer?: boolean;
 }
 
-export interface GameUpdateConnectionData {
-    index: string;
+export interface GameUpdateSetData {
     player1?: { set: { id: number }[], }
     player2?: { set: { id: number }[], }
     scores1?: number[];
@@ -69,10 +79,15 @@ export interface GameUpdateConnectionData {
     hasByePlayer?: boolean;
 }
 
+export interface GameUpdateSetDataWithId {
+    where: {id: number},
+    data: GameUpdateSetData
+}
+
 export interface TournamentGameCreateData {
     create: GameCreateConnectionData[]
 }
 
 export interface TournamentGameUpdateData {
-    create: GameUpdateConnectionData[]
+    update: GameUpdateSetDataWithId[]
 }

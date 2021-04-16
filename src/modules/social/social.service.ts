@@ -11,7 +11,7 @@ import UnauthorizedError from '../../errors/UnauthorizedError';
 import { createToken } from '../../utils/jwtTokenUtils';
 import { TokenDurationFor } from '../../types/main';
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, GOOGLE_CLIENT_ID } = process.env;
-//import FB from 'fb';
+// import FB from 'fb';
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 export const registerOrLoginGoogleUser = async (token: string): Promise<UserLoginData> => {

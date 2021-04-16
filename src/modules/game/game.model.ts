@@ -7,13 +7,11 @@ export default class Game {
     userId: number;
     tournamentId: number;
     index: string;
-    // indexes: string[];
     player1: { id: number }[];
     player2: { id: number }[];
     scores1: number[];
     scores2: number[];
     hasByePlayer?: boolean;
-    // players: Players;
     constructor(data: GameInstanceData) {
         this.id = data.id;
         this.userId = data.userId;
@@ -27,7 +25,7 @@ export default class Game {
     }
 
     async getById(): Promise<GameData> {
-        var a = await prisma.game.findUnique({
+        const a = await prisma.game.findUnique({
             where: { id: this.id },
             select: {
                 id: true,
@@ -108,15 +106,14 @@ export default class Game {
                 player2.push({ id: this.player2[1].id });
             }
         }
-        console.log('player1', player1)
-        return await prisma.game.update({
+        return prisma.game.update({
             where: {
                 id: this.id
             },
             data:
             {
-                player1: { set: player1 },
-                player2: { set: player2 },
+                player1: (player1 && player1[0]?.id) ? { set: player1 } : undefined,
+                player2: (player2 && player2[0]?.id) ? { set: player2 } : undefined,
                 scores1: this.scores1,
                 scores2: this.scores2,
                 hasByePlayer: this.hasByePlayer,
@@ -133,7 +130,6 @@ export default class Game {
             }
         });
     }
-
 
     async deleteById(): Promise<GameData> {
         return await prisma.game.delete({

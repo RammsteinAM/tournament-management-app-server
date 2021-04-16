@@ -16,5 +16,5 @@ router.route("/:id")
   .get(authorize, getPlayer)
   .put(authorize, editPlayer)
   .delete(authorize, deletePlayer);
-  
+
 export default router;

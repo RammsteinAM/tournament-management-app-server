@@ -45,12 +45,3 @@ export interface Player {
     id: number;
     name: string;
 }
-
-// export interface Game {
-//     id: number;
-//     tournamentId: number;
-//     scores: Scores;
-//     round: number;
-// }
-
-// export type Games = Game[];

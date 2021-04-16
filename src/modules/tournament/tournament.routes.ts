@@ -16,5 +16,5 @@ router.route("/:id")
   .get(authorize, getTournament)
   .put(authorize, editTournament)
   .delete(authorize, deleteTournament);
-  
+
 export default router;

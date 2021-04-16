@@ -4,6 +4,7 @@ import * as gameService from './game.service';
 import { StatusCodesOkay } from '../../types/status';
 import { RequestWithUserId, ResBody } from '../../types/main';
 import { GameCreateData, GameCreationData, GameData, GamesData, GamesResData, GameUpdateData } from "./game.types";
+import { TournamentResData } from "../tournament/tournament.types";
 
 export const getGames = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
     const tournamentId = req.query.tournamentId?.toString();
@@ -36,9 +37,10 @@ export const getGame = asyncWrapper(async (req: RequestWithUserId<{ id: number }
 //     res.status(StatusCodesOkay.Created).json(resBody);
 // });
 
-export const editGame = asyncWrapper(async (req: RequestWithUserId<{ id: number }>, res: Response): Promise<void> => {
+export const editGame = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
     const gameUpdateData = req.body as GameUpdateData;
-    const data = await gameService.updateGame(gameUpdateData);
+    const { id: gameId } = req.params;
+    const data = await gameService.updateGame(gameUpdateData, parseInt(gameId, 10));
     const resBody: ResBody<GameData> = {
         success: true,
         data,
@@ -46,17 +48,19 @@ export const editGame = asyncWrapper(async (req: RequestWithUserId<{ id: number 
     res.status(StatusCodesOkay.OK).json(resBody);
 })
 
-export const deleteGame = asyncWrapper(async (req: RequestWithUserId<{ id: number }>, res: Response): Promise<void> => {
-    // const { id } = req.params;
-    // const data = req.body as UserEditRequestData;
-    // if (!data.displayName && !data.currentPassword) throw new BadRequestError();
-    // if (data.currentPassword) {
-    //     validateUserUpdate(data);
-    // }
-    // const { email, displayName } = await userService.updateUser(parseInt(`${id}`, 10), data);
+export const editGameAndNextGames = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
+    const gameUpdateData = req.body as GameUpdateData;
+    const { id: gameId } = req.params;
 
-    // res.status(StatusCodesOkay.OK).json({
-    //     success: true,
-    //     data: { id, email, displayName },
-    // });
+    const data = await gameService.updateGameAndNextGames(gameUpdateData, parseInt(gameId, 10), req.userId);
+    const resData = { tournamentId: data.id, games: data.games }
+    const resBody: ResBody<any> = {
+        success: true,
+        data: resData,
+    };
+    res.status(StatusCodesOkay.OK).json(resBody);
+})
+
+export const deleteGame = asyncWrapper(async (req: RequestWithUserId<{ id: number }>, res: Response): Promise<void> => {
+
 })

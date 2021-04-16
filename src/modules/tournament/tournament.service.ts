@@ -1,7 +1,7 @@
-import { generateGameCreateData } from "../../helpers";
-import { GamesData, GamesResData, TournamentGameCreateData } from "../game/game.types";
+import { generateGameCreateData, generateGameUpdateData } from "../../helpers";
+import { GamesResData } from "../game/game.types";
 import Tournament from "./tournament.model";
-import { GamesCreateData, TournamentCreateData, TournamentData, TournamentDeleteData, TournamentsNormalizedData, TournamentUpdateData } from "./tournament.types";
+import { GamesCreateData, GamesUpdateData, TournamentCreateData, TournamentData, TournamentDeleteData, TournamentResData, TournamentsNormalizedData, TournamentUpdateData } from "./tournament.types";
 
 export const getUserTournaments = async (userId: number): Promise<TournamentsNormalizedData> => {
     const tournament = new Tournament({ userId });
@@ -25,7 +25,7 @@ export const getTournamentTypeId = async (id: number, userId: number): Promise<T
 
 export const createTournament = async (data: TournamentCreateData): Promise<TournamentData> => {
     const gameCreateData = generateGameCreateData(data.games);
-    const tournament = new Tournament({ ...data, games: gameCreateData });
+    const tournament = new Tournament({ ...data, newGames: gameCreateData });
     return await tournament.create();
 }
 
@@ -41,6 +41,12 @@ export const deleteTournament = async (data: TournamentDeleteData): Promise<{ id
 
 export const createTournamentGames = async (data: GamesCreateData): Promise<GamesResData> => {
     const gameCreateData = generateGameCreateData(data.games);
-    const tournament = new Tournament({ id: data.tournamentId, userId: data.userId, games: gameCreateData });
+    const tournament = new Tournament({ id: data.tournamentId, userId: data.userId, newGames: gameCreateData });
     return await tournament.createGames();
+}
+
+export const updateTournamentGames = async (data: GamesUpdateData): Promise<TournamentResData> => {
+    const gameUpdateData = generateGameUpdateData(data.games);
+    const tournament = new Tournament({ id: data.tournamentId, userId: data.userId, existingGames: gameUpdateData });
+    return await tournament.updateGames();
 }

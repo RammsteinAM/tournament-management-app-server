@@ -1,4 +1,4 @@
-import { DecodedTokenData, UserAuthData, UserCreateData, UserData, UserEditRequestData, UserLoginCheckResData, UserLoginData, UserLoginTokenData, UserResetPasswordData, UserVerificationData } from "./auth.types";
+import { DecodedTokenData, UserAuthData, UserCreateData, UserData, UserEditRequestData, UserLoginCheckResData, UserLoginTokenData, UserResetPasswordData, UserVerificationData } from "./auth.types";
 import BadRequestError from "../../errors/BadRequestError";
 import { checkPasswordAsync, encryptPasswordAsync } from "../../utils/encryption";
 import { createToken, getVerifiedData, verifyTokenData } from "../../utils/jwtTokenUtils";
@@ -7,11 +7,9 @@ import User from "./auth.model";
 import UnprocessableEntity from "../../errors/UnprocessableEntity";
 import UnauthorizedError from "../../errors/UnauthorizedError";
 import { Locales, TokenDurationFor } from "../../types/main";
-import ForbiddenError from "../../errors/ForbiddenError";
 import InternalServerError from "../../errors/InternalServerError";
 import { getDateDiffInSeconds } from "../../utils/dateUtils";
 import { ErrorNames } from "../../types/error";
-import { access } from "fs";
 import NotFoundError from "../../errors/NotFoundError";
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, VERIFICATION_TOKEN_SECRET } = process.env;
 

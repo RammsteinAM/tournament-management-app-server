@@ -38,7 +38,7 @@ export const createPlayer = asyncWrapper(async (req: RequestWithUserId, res: Res
 
 export const createPlayers = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
     const creationData = req.body as string[];
-    //cosnt tournamentTypeId = await tournamentService.getTournamentTypeId()
+    // cosnt tournamentTypeId = await tournamentService.getTournamentTypeId()
     const newPlayersList = await playerService.createPlayers(creationData, req.userId);
     const resBody: ResBody<PlayerData[]> = {
         success: true,
