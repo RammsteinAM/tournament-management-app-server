@@ -41,6 +41,7 @@ model Tournament {
   tournamentType   TournamentType @relation(fields: [tournamentTypeId], references: [id])
   tournamentTypeId Int
   games            Game[]
+  players          Player[]
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 }
@@ -52,13 +53,15 @@ model TournamentType {
 }
 
 model Player {
-  id        Int      @id @default(autoincrement())
-  name      String
-  user      User?    @relation(fields: [userId], references: [id])
-  userId    Int?
-  games1    Game[]   @relation("p1")
-  games2    Game[]   @relation("p2")
-  isDeleted Boolean?
+  id           Int         @id @default(autoincrement())
+  name         String
+  user         User?       @relation(fields: [userId], references: [id])
+  userId       Int?
+  games1       Game[]      @relation("p1")
+  games2       Game[]      @relation("p2")
+  isDeleted    Boolean?
+  Tournament   Tournament? @relation(fields: [tournamentId], references: [id])
+  tournamentId Int?
 }
 
 model Game {

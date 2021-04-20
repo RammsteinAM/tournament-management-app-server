@@ -13,6 +13,7 @@ export interface TournamentCreateData {
     pointsForWin?: number;
     pointsForDraw?: number;
     games?: GameInsertData[];
+    players?: number[];
 }
 
 export interface TournamentUpdateData {
@@ -38,6 +39,7 @@ export interface TournamentResData {
     name: string;
     sets?: number;
     goalsToWin?: number;
+    numberOfLives?: number;
     numberOfGoals?: number;
     draw?: boolean;
     pointsForWin?: number,
@@ -45,6 +47,7 @@ export interface TournamentResData {
     createdAt?: Date;
     updatedAt?: Date;
     games: GamesData;
+    players?: number[];
 }
 
 export interface TournamentData {
@@ -53,11 +56,13 @@ export interface TournamentData {
     name?: string;
     sets?: number;
     goalsToWin?: number;
+    numberOfLives?: number;
     numberOfGoals?: number;
     draw?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
     games?: GamesData;
+    players?: { id: number}[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -78,7 +83,7 @@ export interface TournamentInstanceData {
     draw?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
-    players?: Players;
+    players?: TournamentPlayerConnectData;
     newGames?: TournamentGameCreateData;
     existingGames?: TournamentGameUpdateData;
     tournamentTypeId?: number;
@@ -101,4 +106,8 @@ export interface GamesUpdateData {
     userId: number;
     tournamentId: number;
     games: GameUpdateDataForMultipleGames[];
+}
+
+export interface TournamentPlayerConnectData {
+    connect: { id: number }[]
 }

@@ -1,6 +1,6 @@
 import prisma from "../../../prisma/prisma";
 import { GamesResData, TournamentGameCreateData, TournamentGameUpdateData } from "../game/game.types";
-import { TournamentData, TournamentInstanceData, TournamentResData } from "./tournament.types";
+import { TournamentData, TournamentInstanceData, TournamentPlayerConnectData, TournamentResData } from "./tournament.types";
 export default class Tournament {
     id: number;
     userId: number;
@@ -14,6 +14,7 @@ export default class Tournament {
     newGames: TournamentGameCreateData;
     existingGames: TournamentGameUpdateData;
     tournamentTypeId: number;
+    players: TournamentPlayerConnectData;
     constructor(data: TournamentInstanceData) {
         this.id = data.id;
         this.userId = data.userId;
@@ -24,6 +25,7 @@ export default class Tournament {
         this.newGames = data.newGames;
         this.existingGames = data.existingGames;
         this.tournamentTypeId = data.tournamentTypeId;
+        this.players = data.players;
     }
 
     async getById(): Promise<TournamentData> {
@@ -44,6 +46,11 @@ export default class Tournament {
                 userId: true,
                 draw: true,
                 tournamentTypeId: true,
+                players: {
+                    select: {
+                        id: true
+                    }
+                },
                 games: {
                     select: {
                         id: true,
@@ -81,6 +88,7 @@ export default class Tournament {
                     connect: { id: this.tournamentTypeId }
                 },
                 games: this.newGames,
+                players: this.players,
             },
             select: {
                 id: true,
@@ -97,6 +105,11 @@ export default class Tournament {
                 userId: true,
                 draw: true,
                 tournamentTypeId: true,
+                players: {
+                    select: {
+                        id: true
+                    }
+                },
                 games: {
                     select: {
                         id: true,

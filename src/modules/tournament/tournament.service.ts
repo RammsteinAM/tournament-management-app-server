@@ -1,4 +1,4 @@
-import { generateGameCreateData, generateGameUpdateData } from "../../helpers";
+import { generateGameCreateData, generateGameUpdateData, generatePlayerConnectData } from "../../helpers";
 import { GamesResData } from "../game/game.types";
 import Tournament from "./tournament.model";
 import { GamesCreateData, GamesUpdateData, TournamentCreateData, TournamentData, TournamentDeleteData, TournamentResData, TournamentsNormalizedData, TournamentUpdateData } from "./tournament.types";
@@ -25,7 +25,8 @@ export const getTournamentTypeId = async (id: number, userId: number): Promise<T
 
 export const createTournament = async (data: TournamentCreateData): Promise<TournamentData> => {
     const gameCreateData = generateGameCreateData(data.games);
-    const tournament = new Tournament({ ...data, newGames: gameCreateData });
+    const playerConnectData = generatePlayerConnectData(data.players);
+    const tournament = new Tournament({ ...data, newGames: gameCreateData, players: playerConnectData });
     return await tournament.create();
 }
 

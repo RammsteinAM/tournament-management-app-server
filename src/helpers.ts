@@ -1,9 +1,17 @@
 import { GameCreateConnectionData, GameInsertData, GamesData, GameUpdateDataForMultipleGames, GameUpdateSetData, GameUpdateSetDataWithId, NormalizedGamesData, TournamentGameCreateData, TournamentGameUpdateData } from "./modules/game/game.types";
-import { TournamentCreateData } from "./modules/tournament/tournament.types";
+import { TournamentCreateData, TournamentPlayerConnectData } from "./modules/tournament/tournament.types";
 
 interface GameKeyParts {
     round: number;
     gameNumber: number;
+}
+
+export const generatePlayerConnectData = (playerIds: number[]) => {
+    const playerConnectionData = playerIds.map(id => {
+        return { id };
+    });
+    const gameCreateData: TournamentPlayerConnectData = playerConnectionData ? { connect: playerConnectionData } : undefined;
+    return gameCreateData;
 }
 
 export const generateGameCreateData = (games: GameInsertData[]) => {
