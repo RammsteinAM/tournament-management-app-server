@@ -1,3 +1,4 @@
+import { DBPlayer } from "../player/player.types";
 
 export type TournamentDataWithUserId<T> = T & { userId: number }
 
@@ -9,8 +10,8 @@ export interface GameCreateData {
 
 export interface GameInsertData {
     index: string;
-    player1?: { id: number }[],
-    player2?: { id: number }[],
+    player1?: DBPlayer,
+    player2?: DBPlayer,
     scores1?: number[];
     scores2?: number[];
     hasByePlayer?: boolean;
@@ -18,8 +19,8 @@ export interface GameInsertData {
 
 export interface GameUpdateDataForMultipleGames {
     id: number;
-    player1?: { id: number }[],
-    player2?: { id: number }[],
+    player1?: DBPlayer,
+    player2?: DBPlayer,
     scores1?: number[];
     scores2?: number[];
     hasByePlayer?: boolean;
@@ -34,8 +35,8 @@ export interface GameCreationData {
 export interface GameData {
     id: number;
     index: string;
-    player1?: { id: number }[],
-    player2?: { id: number }[],
+    player1?: DBPlayer,
+    player2?: DBPlayer,
     scores1?: number[];
     scores2?: number[];
     hasByePlayer?: boolean;
@@ -54,8 +55,8 @@ export interface GameInstanceData {
     id?: number;
     userId?: number;
     tournamentId?: number;
-    player1?: { id: number }[],
-    player2?: { id: number }[],
+    player1?: DBPlayer,
+    player2?: DBPlayer,
     scores1?: number[];
     scores2?: number[];
     hasByePlayer?: boolean;
@@ -64,23 +65,23 @@ export interface GameInstanceData {
 
 export interface GameCreateConnectionData {
     index: string;
-    player1?: { connect: { id: number }[], }
-    player2?: { connect: { id: number }[], }
+    player1?: { connect: DBPlayer, }
+    player2?: { connect: DBPlayer, }
     scores1?: number[];
     scores2?: number[];
     hasByePlayer?: boolean;
 }
 
 export interface GameUpdateSetData {
-    player1?: { set: { id: number }[], }
-    player2?: { set: { id: number }[], }
+    player1?: { set: DBPlayer, }
+    player2?: { set: DBPlayer, }
     scores1?: number[];
     scores2?: number[];
     hasByePlayer?: boolean;
 }
 
 export interface GameUpdateSetDataWithId {
-    where: {id: number},
+    where: { id: number },
     data: GameUpdateSetData
 }
 

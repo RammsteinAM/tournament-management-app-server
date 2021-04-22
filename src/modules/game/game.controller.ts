@@ -13,7 +13,7 @@ export const getGames = asyncWrapper(async (req: RequestWithUserId, res: Respons
         success: true,
         data: { [tournamentId]: data },
     };
-    res.status(StatusCodesOkay.Created).json(resBody);
+    res.status(StatusCodesOkay.OK).json(resBody);
 })
 
 export const getGame = asyncWrapper(async (req: RequestWithUserId<{ id: number }>, res: Response): Promise<void> => {

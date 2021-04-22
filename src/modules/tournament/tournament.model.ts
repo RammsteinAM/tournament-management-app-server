@@ -1,6 +1,7 @@
 import prisma from "../../../prisma/prisma";
 import { GamesResData, TournamentGameCreateData, TournamentGameUpdateData } from "../game/game.types";
-import { TournamentData, TournamentInstanceData, TournamentPlayerConnectData, TournamentResData } from "./tournament.types";
+import { DBPlayer } from "../player/player.types";
+import { TournamentData, TournamentExportData, TournamentExportResData, TournamentGamesData, TournamentInstanceData, TournamentPlayerConnectData, TournamentResData } from "./tournament.types";
 export default class Tournament {
     id: number;
     userId: number;
@@ -11,6 +12,7 @@ export default class Tournament {
     pointsForWin: number;
     pointsForDraw: number;
     draw: boolean;
+    isFinished: boolean;
     newGames: TournamentGameCreateData;
     existingGames: TournamentGameUpdateData;
     tournamentTypeId: number;
@@ -21,6 +23,9 @@ export default class Tournament {
         this.name = data.name;
         this.sets = data.sets;
         this.numberOfGoals = data.numberOfGoals;
+        this.numberOfLives = data.numberOfLives;
+        this.pointsForWin = data.pointsForWin;
+        this.pointsForDraw = data.pointsForDraw;
         this.draw = data.draw;
         this.newGames = data.newGames;
         this.existingGames = data.existingGames;
@@ -41,11 +46,11 @@ export default class Tournament {
                 pointsForWin: true,
                 sets: true,
                 tournamentType: true,
-                createdAt: true,
-                updatedAt: true,
                 userId: true,
                 draw: true,
                 tournamentTypeId: true,
+                createdAt: true,
+                updatedAt: true,
                 players: {
                     select: {
                         id: true
@@ -62,6 +67,62 @@ export default class Tournament {
                         hasByePlayer: true,
                     }
                 }
+            }
+
+        });
+    }
+
+    async getExportDataById(): Promise<TournamentExportData> {
+        return await prisma.tournament.findUnique({
+            where: { id: this.id },
+            select: {
+                name: true,
+                sets: true,
+                numberOfGoals: true,
+                numberOfLives: true,
+                numberOfTables: true,
+                pointsForDraw: true,
+                pointsForWin: true,
+                draw: true,
+                tournamentTypeId: true,
+                createdAt: true,
+                players: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                games: {
+                    select: {
+                        index: true,
+                        player1: { select: { id: true, name: true } },
+                        player2: { select: { id: true, name: true } },
+                        scores1: true,
+                        scores2: true,
+                        hasByePlayer: true,
+                    }
+                }
+            }
+
+        });
+    }
+
+    async getByIdForPlayers(): Promise<TournamentData> {
+        return await prisma.tournament.findUnique({
+            where: { id: this.id },
+            select: {
+                id: true,
+                name: true,
+                numberOfLives: true,
+                sets: true,
+                userId: true,
+                createdAt: true,
+                updatedAt: true,
+                players: {
+                    select: {
+                        id: true
+                    }
+                },
             }
 
         });
@@ -125,7 +186,7 @@ export default class Tournament {
         });
     }
 
-    async createGames(): Promise<GamesResData> {
+    async createGames(): Promise<TournamentGamesData> {
         return await prisma.tournament.update({
             where: { id: this.id },
             data: {

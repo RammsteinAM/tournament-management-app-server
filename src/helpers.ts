@@ -7,7 +7,7 @@ interface GameKeyParts {
 }
 
 export const generatePlayerConnectData = (playerIds: number[]) => {
-    const playerConnectionData = playerIds.map(id => {
+    const playerConnectionData = playerIds?.map(id => {
         return { id };
     });
     const gameCreateData: TournamentPlayerConnectData = playerConnectionData ? { connect: playerConnectionData } : undefined;
@@ -120,3 +120,53 @@ export const generateGameUpdateData = (games: GameUpdateDataForMultipleGames[]) 
     const gameUpdateData: TournamentGameUpdateData = gamesSetData ? { update: gamesSetData } : undefined;
     return gameUpdateData;
 }
+
+export const getPlayersLives = (tournamentGames: GamesData, tournamentPlayers: number[], numberOfLives: number) => {
+
+    const playerInitialLives = tournamentPlayers.reduce((acc: {[id: number]: number }, val) => {
+        acc[val] = numberOfLives;
+        return acc;
+    }, {});
+
+    const playerLives = tournamentGames.reduce((acc, val) => {
+        if (!val.scores1 || !val.scores2 || val.scores1.length === 0 || val.scores2.length === 0) {
+            return acc;
+        }
+        const { score1, score2 } = getMultipleSetScores(val.scores1, val.scores2, val.scores1.length);
+
+        if (!val.player1 || !val.player2) {
+            return acc;
+        }
+
+        const id1_0 = val.player1[0] && val.player1[0].id;
+        const id1_1 = val.player1[1] && val.player1[1].id;
+        const id2_0 = val.player2[0] && val.player2[0].id;
+        const id2_1 = val.player2[1] && val.player2[1].id;
+
+        // SINGLE, TEAM
+        if (id1_0 && id2_0 && typeof acc[id1_0] === 'number' && typeof acc[id2_0] === 'number' && !id1_1 && !id2_1) {
+            if (score1 > score2) {
+                acc[id2_0]--;
+            }
+            if (score1 < score2) {
+                acc[id1_0]--;
+            }
+        }
+
+        // DYP
+        else if (id1_0 && id2_0 && id1_1 && id2_1) {
+            if (score1 > score2) {
+                acc[id2_0]--;
+                acc[id2_1]--;
+            }
+            if (score1 < score2) {
+                acc[id1_0]--;
+                acc[id1_1]--;
+            }
+        }
+
+        return acc;
+    }, playerInitialLives);
+
+    return playerLives;
+};

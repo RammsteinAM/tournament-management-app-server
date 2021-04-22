@@ -41,7 +41,4 @@ export interface PlayersInstanceData {
     names?: string[];
 }
 
-export interface Player {
-    id: number;
-    name: string;
-}
+export type DBPlayer = { id: number }[]

@@ -3,7 +3,7 @@ import { generateGameUpdateData, getMultipleSetScores, getNextGameKey, getParent
 import { updateTournamentGames } from "../tournament/tournament.service";
 import { GamesCreateData, GamesUpdateData, TournamentResData } from "../tournament/tournament.types";
 import Game from "./game.model";
-import { GameCreateData, GameData, GamesData, GamesResData, GameUpdateData, GameUpdateDataForMultipleGames } from "./game.types";
+import { GameCreateData, GameData, GamesData, GameUpdateData, GameUpdateDataForMultipleGames } from "./game.types";
 
 export const getTournamentGames = async (userId: number, tournamentId: number): Promise<GamesData> => {
     if (!tournamentId) {
@@ -20,8 +20,6 @@ export const getGameById = async (id: number, userId: number): Promise<GameData>
 
 export const createGame = async ({ userId, tournamentId }: GameCreateData): Promise<GameData> => {
     const game = new Game({ userId, tournamentId });
-    // const playerFound = await game.getById();
-    // if (playerFound) throw new BadRequestError('Player with the given name already exists.', ErrorNames.DuplicatePlayerName);
     return await game.create();
 }
 
@@ -33,8 +31,7 @@ export const updateGame = async (data: GameUpdateData, id: number): Promise<Game
 
 export const updateGameAndNextGames = async (data: GameUpdateData, gameId: number, userId: number): Promise<TournamentResData> => {
     const game = new Game({ ...data, id: gameId });
-
-    // const updatedGame = await game.updateById();
+    
     const dbGame = await game.getById();
 
     const tournamentGames = await getTournamentGames(userId, dbGame.tournamentId);
