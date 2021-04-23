@@ -7,6 +7,7 @@ export default class Tournament {
     userId: number;
     name: string;
     sets: number;
+    numberOfTables: number;
     numberOfGoals: number;
     numberOfLives: number;
     pointsForWin: number;
@@ -22,6 +23,7 @@ export default class Tournament {
         this.userId = data.userId;
         this.name = data.name;
         this.sets = data.sets;
+        this.numberOfTables = data.numberOfTables;
         this.numberOfGoals = data.numberOfGoals;
         this.numberOfLives = data.numberOfLives;
         this.pointsForWin = data.pointsForWin;
@@ -138,6 +140,7 @@ export default class Tournament {
                 name: this.name,
                 sets: this.sets,
                 draw: this.draw,
+                numberOfTables: this.numberOfTables,
                 numberOfGoals: this.numberOfGoals,
                 numberOfLives: this.numberOfLives,
                 pointsForWin: this.pointsForWin,

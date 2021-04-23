@@ -8,6 +8,7 @@ export interface TournamentCreateData {
     userId: number;
     name: string;
     sets: number;
+    numberOfTables?: number;
     numberOfGoals?: number;
     numberOfLives?: number;
     draw?: boolean;
@@ -41,6 +42,7 @@ export interface TournamentResData {
     userId: number;
     name: string;
     sets?: number;
+    numberOfTables?: number;
     numberOfLives?: number;
     numberOfGoals?: number;
     draw?: boolean;
@@ -73,6 +75,7 @@ export interface TournamentData {
     userId: number;
     name?: string;
     sets?: number;
+    numberOfTables?: number;
     numberOfLives?: number;
     numberOfGoals?: number;
     draw?: boolean;
@@ -87,6 +90,7 @@ export interface TournamentData {
 export interface TournamentExportData {
     name?: string;
     sets?: number;
+    numberOfTables?: number;
     numberOfLives?: number;
     numberOfGoals?: number;
     draw?: boolean;
@@ -109,6 +113,7 @@ export interface TournamentInstanceData {
     userId: number;
     name?: string;
     sets?: number;
+    numberOfTables?: number;
     numberOfGoals?: number;
     numberOfLives?: number;
     draw?: boolean;
