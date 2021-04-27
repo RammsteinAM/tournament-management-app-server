@@ -13,6 +13,7 @@ export default class Tournament {
     pointsForWin: number;
     pointsForDraw: number;
     draw: boolean;
+    monsterDYP: boolean;
     isFinished: boolean;
     newGames: TournamentGameCreateData;
     existingGames: TournamentGameUpdateData;
@@ -29,6 +30,7 @@ export default class Tournament {
         this.pointsForWin = data.pointsForWin;
         this.pointsForDraw = data.pointsForDraw;
         this.draw = data.draw;
+        this.monsterDYP = data.monsterDYP;
         this.newGames = data.newGames;
         this.existingGames = data.existingGames;
         this.tournamentTypeId = data.tournamentTypeId;
@@ -50,6 +52,7 @@ export default class Tournament {
                 tournamentType: true,
                 userId: true,
                 draw: true,
+                monsterDYP: true,
                 tournamentTypeId: true,
                 createdAt: true,
                 updatedAt: true,
@@ -86,6 +89,7 @@ export default class Tournament {
                 pointsForDraw: true,
                 pointsForWin: true,
                 draw: true,
+                monsterDYP: true,
                 tournamentTypeId: true,
                 createdAt: true,
                 players: {
@@ -140,6 +144,7 @@ export default class Tournament {
                 name: this.name,
                 sets: this.sets,
                 draw: this.draw,
+                monsterDYP: this.monsterDYP,
                 numberOfTables: this.numberOfTables,
                 numberOfGoals: this.numberOfGoals,
                 numberOfLives: this.numberOfLives,
@@ -168,6 +173,7 @@ export default class Tournament {
                 updatedAt: true,
                 userId: true,
                 draw: true,
+                monsterDYP: true,
                 tournamentTypeId: true,
                 players: {
                     select: {

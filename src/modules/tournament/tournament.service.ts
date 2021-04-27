@@ -1,5 +1,5 @@
 import BadRequestError from "../../errors/BadRequestError";
-import { generateGameCreateData, generateGameUpdateData, generatePlayerConnectData, getPlayersLives, splitGameKey } from "../../helpers";
+import { generateGameCreateData, generateGameUpdateData, generatePlayerConnectData, getPlayersLives, getShuffledNextRoundDYPParticipants, getShuffledNextRoundParticipants, splitGameKey } from "../../helpers";
 import { arrayAlreadyHasArray, shuffle } from "../../utils/arrayUtils";
 import { getTournamentGames } from "../game/game.service";
 import { GameData, GameInsertData, GamesResData } from "../game/game.types";
@@ -94,7 +94,7 @@ export const createNextLMSRound = async (tournamentId: number, userId: number): 
         return playerLives[pair[0]] > 0 && playerLives[pair[1]] > 0
     }
 
-    const alivePlayerIds = tournamentPlayerIds?.filter(aliveFilterCallback)
+    // const alivePlayerIds = tournamentPlayerIds?.filter(aliveFilterCallback)
 
     // const waitingParticipant = lastRoundParticipants.filter(participant => {
     //     if (typeof participant.id === 'number') {
@@ -128,38 +128,21 @@ export const createNextLMSRound = async (tournamentId: number, userId: number): 
         const waitingParticipantIds = tournamentPlayerIds.filter(id => {
             return playerLives[id] > 0 && lastRoundParticipantIds.indexOf(id) === -1
         })
-        let nextRoundParticipantIds = lastRoundParticipantIds.filter(aliveFilterCallback)
+        const lastRoundAliveParticipantIds = lastRoundParticipantIds.filter(aliveFilterCallback)
 
-        if (waitingParticipantIds) {
-            nextRoundParticipantIds = waitingParticipantIds.concat(nextRoundParticipantIds)
-        }
-        const shuffledNextRoundParticipantIds = shuffle(nextRoundParticipantIds);
+        const shuffledNextRoundParticipantIds = getShuffledNextRoundParticipants(lastRoundParticipantIds, lastRoundAliveParticipantIds, waitingParticipantIds);
 
-
-        console.log('nextRoundParticipantIds', nextRoundParticipantIds)
         nextGames = shuffledNextRoundParticipantIds.reduce((acc: GameInsertData[], val: number, i: number, arr: number[]) => {
-            if (!isDYP) {
-                if (!arr[i + 1] || i % 2 === 1) {
-                    return acc;
-                }
-                acc.push({
-                    player1: [{ id: val }],
-                    player2: [{ id: arr[i + 1] }],
-                    index: `${lastRoundNumber + 1}-${Math.ceil((i + 1) / 2)}`
-                }
-                )
+            if (!arr[i + 1] || i % 2 === 1) {
                 return acc;
             }
-            else {
-
-            }
+            acc.push({
+                player1: [{ id: val }],
+                player2: [{ id: arr[i + 1] }],
+                index: `${lastRoundNumber + 1}-${Math.ceil((i + 1) / 2)}`
+            })
+            return acc;
         }, []);
-        console.log('tournamentGames', tournamentGames)
-        console.log('dbTournament.numberOfLives', dbTournament.numberOfLives)
-        console.log('playerLives', playerLives)
-        console.log('lastRoundParticipantIds', lastRoundParticipantIds)
-        console.log('tournamentPlayerIds', tournamentPlayerIds)
-        console.log('waitingParticipantIds', waitingParticipantIds)
     }
     else {
         const pairs = tournamentGames.reduce((acc: [number, number][], val: GameData) => {
@@ -184,43 +167,34 @@ export const createNextLMSRound = async (tournamentId: number, userId: number): 
             []
         )
 
+        // const notIncludedPlayers = tournamentPlayerIds.filter(id => pairs.flat().indexOf(id) === -1);
 
-        const notIncludedPlayers = tournamentPlayerIds.filter(id => pairs.flat().indexOf(id) === -1);
-
-        if (notIncludedPlayers.length === 2) {
-            pairs.push([notIncludedPlayers[0], notIncludedPlayers[1]])
-        }
+        // if (notIncludedPlayers.length === 2) {
+        //     pairs.push([notIncludedPlayers[0], notIncludedPlayers[1]])
+        // }
 
         const waitingParticipantIds: [number, number][] = pairs.filter(pair => {
             return playerLives[pair[0]] > 0 && playerLives[pair[1]] > 0 && !arrayAlreadyHasArray(lastRoundParticipantIds, pair)
         })
 
-        let nextRoundParticipantIds: [number, number][] = lastRoundParticipantIds.filter(aliveFilterCallback2D)
+        const lastRoundAliveParticipantIds: [number, number][] = lastRoundParticipantIds.filter(aliveFilterCallback2D)
 
-        if (waitingParticipantIds) {
-            nextRoundParticipantIds = waitingParticipantIds.concat(nextRoundParticipantIds)
-        }
-        const shuffledNextRoundParticipantIds = shuffle(nextRoundParticipantIds);
-        console.log('nextRoundParticipantIds', nextRoundParticipantIds)
+        // if (waitingParticipantIds) {
+        //     nextRoundParticipantIds = waitingParticipantIds.concat(nextRoundParticipantIds)
+        // }
+        // const shuffledNextRoundParticipantIds = shuffle(nextRoundParticipantIds);
+        const shuffledNextRoundParticipantIds = getShuffledNextRoundDYPParticipants(lastRoundParticipantIds, lastRoundAliveParticipantIds, waitingParticipantIds);
         nextGames = shuffledNextRoundParticipantIds.reduce((acc: GameInsertData[], val: [number, number], i: number, arr: [number, number][]) => {
             if (!arr[i + 1] || i % 2 === 1) {
                 return acc;
             }
-            acc.push(
-                {
-                    player1: [{ id: val[0] }, { id: val[1] }],
-                    player2: [{ id: arr[i + 1][0] }, { id: arr[i + 1][1] }],
-                    index: `${lastRoundNumber + 1}-${Math.ceil((i + 1) / 2)}`
-                }
-            )
+            acc.push({
+                player1: [{ id: val[0] }, { id: val[1] }],
+                player2: [{ id: arr[i + 1][0] }, { id: arr[i + 1][1] }],
+                index: `${lastRoundNumber + 1}-${Math.ceil((i + 1) / 2)}`
+            })
             return acc;
         }, []);
-        console.log('tournamentGames', tournamentGames)
-        console.log('dbTournament.numberOfLives', dbTournament.numberOfLives)
-        console.log('playerLives', playerLives)
-        console.log('lastRoundParticipantIds', lastRoundParticipantIds)
-        console.log('tournamentPlayerIds', tournamentPlayerIds)
-        console.log('waitingParticipantIds', waitingParticipantIds)
     }
 
     const gameCreateData = generateGameCreateData(nextGames);

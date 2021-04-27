@@ -1,5 +1,6 @@
 import { GameCreateConnectionData, GameInsertData, GamesData, GameUpdateDataForMultipleGames, GameUpdateSetData, GameUpdateSetDataWithId, NormalizedGamesData, TournamentGameCreateData, TournamentGameUpdateData } from "./modules/game/game.types";
 import { TournamentCreateData, TournamentPlayerConnectData } from "./modules/tournament/tournament.types";
+import { shuffle } from "./utils/arrayUtils";
 
 interface GameKeyParts {
     round: number;
@@ -123,7 +124,7 @@ export const generateGameUpdateData = (games: GameUpdateDataForMultipleGames[]) 
 
 export const getPlayersLives = (tournamentGames: GamesData, tournamentPlayers: number[], numberOfLives: number) => {
 
-    const playerInitialLives = tournamentPlayers.reduce((acc: {[id: number]: number }, val) => {
+    const playerInitialLives = tournamentPlayers.reduce((acc: { [id: number]: number }, val) => {
         acc[val] = numberOfLives;
         return acc;
     }, {});
@@ -170,3 +171,73 @@ export const getPlayersLives = (tournamentGames: GamesData, tournamentPlayers: n
 
     return playerLives;
 };
+
+export const getShuffledNextRoundParticipants = (lastRoundParticipantIds: number[], lastRoundAliveParticipantIds: number[], waitingParticipantIds: number[]) => {
+    const nextRoundParticipantIds: number[] = [...waitingParticipantIds, ...shuffle(lastRoundAliveParticipantIds)];
+    if (nextRoundParticipantIds.length % 2 === 1) {
+        // If even number of players, remove a player that played in the last round.
+        nextRoundParticipantIds.pop();
+    }
+
+    const lastRoundOpponents = lastRoundParticipantIds.reduce((acc: { [id: number]: number }, val, i: number, arr) => {
+        if (i % 2 === 0) {
+            acc[val] = arr[i + 1];
+        }
+        if (i % 2 === 1) {
+            acc[val] = arr[i - 1];
+        }
+        return acc;
+    }, {})
+    const shuffledNextRoundParticipantIds: number[] = [];
+    let i = nextRoundParticipantIds.length - 1;
+    while (i >= 0) {
+        if (lastRoundOpponents[nextRoundParticipantIds[i]] !== nextRoundParticipantIds[i - 1]) {
+            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 1]);
+            i = i - 2;
+            continue;
+        }
+        if (lastRoundOpponents[nextRoundParticipantIds[i]] === nextRoundParticipantIds[i - 1]) {
+            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 2], nextRoundParticipantIds[i - 1] , nextRoundParticipantIds[i - 3]);
+            i = i - 4;
+            continue;
+        }
+        break;
+    }
+
+    return shuffledNextRoundParticipantIds;
+}
+
+export const getShuffledNextRoundDYPParticipants = (lastRoundParticipantIds: [number, number][], lastRoundAliveParticipantIds: [number, number][], waitingParticipantIds: [number, number][]) => {
+    const nextRoundParticipantIds: [number, number][] = [...waitingParticipantIds, ...shuffle(lastRoundAliveParticipantIds)];
+    if (nextRoundParticipantIds.length % 2 === 1) {
+        // If even number of players, remove a player that played in the last round.
+        nextRoundParticipantIds.pop();
+    }
+
+    const lastRoundOpponents = lastRoundParticipantIds.reduce((acc: { [id: number]: number }, val: [number, number], i: number, arr: [number, number][]) => {
+        if (i % 2 === 0) {
+            acc[val[0]] = arr[i + 1][0];
+        }
+        if (i % 2 === 1) {
+            acc[val[0]] = arr[i - 1][0];
+        }
+        return acc;
+    }, {})
+    const shuffledNextRoundParticipantIds: [number, number][] = [];
+    let i = nextRoundParticipantIds.length - 1;
+    while (i >= 0) {
+        if (lastRoundOpponents[nextRoundParticipantIds[i][0]] !== nextRoundParticipantIds[i - 1][0]) {
+            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 1]);
+            i = i - 2;
+            continue;
+        }
+        if (lastRoundOpponents[nextRoundParticipantIds[i][0]] === nextRoundParticipantIds[i - 1][0]) {
+            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 2], nextRoundParticipantIds[i - 1] , nextRoundParticipantIds[i - 3]);
+            i = i - 4;
+            continue;
+        }
+        break;
+    }
+
+    return shuffledNextRoundParticipantIds;
+}

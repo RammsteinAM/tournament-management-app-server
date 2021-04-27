@@ -13,8 +13,8 @@ const errorHandler = (
     let error: ErrorNames = ErrorNames.Internal;
     let message: string = "Internal Server Error";
 
-    console.log(err);
-    console.log("err instanceof BaseError: ", err instanceof BaseError);
+    console.error(err);
+    console.error("err instanceof BaseError: ", err instanceof BaseError);
 
     if (err instanceof BaseError) {
         status = err.status;

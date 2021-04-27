@@ -29,7 +29,6 @@ export const getTournament = asyncWrapper(async (req: RequestWithUserId<{ id: st
 export const getTournamentExportData = asyncWrapper(async (req: RequestWithUserId<{ id: string }>, res: Response): Promise<void> => {
     const { id: idFromParam } = req.params;
     const { name, sets, draw, numberOfLives, numberOfTables, numberOfGoals, pointsForDraw, pointsForWin, createdAt, games, players } = await tournamentService.getTournamentExportDataById(parseInt(idFromParam, 10), req.userId);
-    console.log(players)
     const resBody: ResBody<TournamentExportResData> = {
         success: true,
         data: { name, sets, draw, numberOfLives, numberOfTables, numberOfGoals, pointsForDraw, pointsForWin, createdAt, games, players },

@@ -79,6 +79,7 @@ export interface TournamentData {
     numberOfLives?: number;
     numberOfGoals?: number;
     draw?: boolean;
+    monsterDYP?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
     games?: GamesData;
@@ -94,6 +95,7 @@ export interface TournamentExportData {
     numberOfLives?: number;
     numberOfGoals?: number;
     draw?: boolean;
+    monsterDYP?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
     games?: Omit<GameData, 'id' | 'tournamentId'>[];
@@ -117,6 +119,7 @@ export interface TournamentInstanceData {
     numberOfGoals?: number;
     numberOfLives?: number;
     draw?: boolean;
+    monsterDYP?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
     players?: TournamentPlayerConnectData;
