@@ -1,5 +1,6 @@
 import BadRequestError from "../../../src/errors/BadRequestError";
 import { generateGameUpdateData, getMultipleSetScores, getNextGameKey, getParentsData, splitGameKey } from "../../helpers";
+import { thirdPlaceIndex } from "../../utils/constants";
 import { updateTournamentGames } from "../tournament/tournament.service";
 import { GamesCreateData, GamesUpdateData, TournamentResData } from "../tournament/tournament.types";
 import Game from "./game.model";
@@ -31,7 +32,7 @@ export const updateGame = async (data: GameUpdateData, id: number): Promise<Game
 
 export const updateGameAndNextGames = async (data: GameUpdateData, gameId: number, userId: number): Promise<TournamentResData> => {
     const game = new Game({ ...data, id: gameId });
-    
+
     const dbGame = await game.getById();
 
     const tournamentGames = await getTournamentGames(userId, dbGame.tournamentId);
@@ -43,7 +44,7 @@ export const updateGameAndNextGames = async (data: GameUpdateData, gameId: numbe
         return acc;
     }, {})
     const finalRoundNumber = Object.values(normalizedGames).map(game => splitGameKey(game.index).round).sort(function (a, b) { return b - a })[0];
-    const isGameOdd = splitGameKey(dbGame.index).gameNumber % 2 === 1;    
+    const isGameOdd = splitGameKey(dbGame.index).gameNumber % 2 === 1;
     const round = splitGameKey(dbGame.index).round;
     const { score1, score2 } = getMultipleSetScores(data.scores1, data.scores2, Object.keys(data.scores1).length);
 
@@ -60,7 +61,7 @@ export const updateGameAndNextGames = async (data: GameUpdateData, gameId: numbe
     }
 
     const gamesData: GameUpdateDataForMultipleGames[] = [initialGameUpdateData];
-    
+
     const nextGameKey = getNextGameKey(dbGame.index, finalRoundNumber);
 
     function updateNextGame(gameKey: string, isGameOdd: boolean) {
@@ -83,9 +84,9 @@ export const updateGameAndNextGames = async (data: GameUpdateData, gameId: numbe
                 hasByePlayer
             }
             gamesData.push(gameData)
-            if (round === finalRoundNumber - 1 && normalizedGames['thirdPlace']) {
+            if (round === finalRoundNumber - 1 && normalizedGames[thirdPlaceIndex]) {
                 const thirdPlaceGameData: GameUpdateDataForMultipleGames = {
-                    id: normalizedGames['thirdPlace'].id,
+                    id: normalizedGames[thirdPlaceIndex].id,
                     player1: loser ? [...loser] : undefined,
                     hasByePlayer: parentGamesData.numberOfParentPlayers < 4
                 }
@@ -99,9 +100,9 @@ export const updateGameAndNextGames = async (data: GameUpdateData, gameId: numbe
                 hasByePlayer
             }
             gamesData.push(gameData)
-            if (round === finalRoundNumber - 1 && normalizedGames['thirdPlace']) {
+            if (round === finalRoundNumber - 1 && normalizedGames[thirdPlaceIndex]) {
                 const thirdPlaceGameData: GameUpdateDataForMultipleGames = {
-                    id: normalizedGames['thirdPlace'].id,
+                    id: normalizedGames[thirdPlaceIndex].id,
                     player2: loser ? [...loser] : undefined,
                     hasByePlayer: parentGamesData.numberOfParentPlayers < 4
                 }
@@ -141,8 +142,7 @@ export const updateGameAndNextGames = async (data: GameUpdateData, gameId: numbe
         updateNextGame(nextGameKey, isNextGameOdd);
     }
     nextGameKey && updateNextGame(nextGameKey, isGameOdd);
-    const updatedTournament = await updateTournamentGames({tournamentId: dbGame.tournamentId, userId, games: gamesData})
-
+    const updatedTournament = await updateTournamentGames({ tournamentId: dbGame.tournamentId, userId, games: gamesData }, tournamentGames, dbGame.index)
 
     return updatedTournament;
 };

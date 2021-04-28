@@ -53,7 +53,7 @@ export const editGameAndNextGames = asyncWrapper(async (req: RequestWithUserId, 
     const { id: gameId } = req.params;
 
     const data = await gameService.updateGameAndNextGames(gameUpdateData, parseInt(gameId, 10), req.userId);
-    const resData = { tournamentId: data.id, games: data.games }
+    const resData = { tournamentId: data.id, games: data.games, tablesByGameIndex: data.tablesByGameIndex }
     const resBody: ResBody<any> = {
         success: true,
         data: resData,

@@ -5,3 +5,5 @@ export const mailSendRoutes = {
     passwordReset: `${mainRoute}reset-password/`,
     deleteAccount: `${mainRoute}delete-account/`,
 }
+
+export const thirdPlaceIndex = 'thirdPlace';

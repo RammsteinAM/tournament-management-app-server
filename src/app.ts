@@ -5,7 +5,6 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import path from "path";
 import cors from "cors";
-// import userRoutes from './modules/user/user.routes';
 import authRoutes from './modules/auth/auth.routes';
 import socialRoutes from "./modules/social/social.routes";
 import tournamentRoutes from "./modules/tournament/tournament.routes";
@@ -36,9 +35,8 @@ class App {
   private addMiddlewares(): void {
     this.app.use(cors({origin: true, credentials: true}));
     this.app.use(cookieParser());
-    this.app.use(bodyParser.json());
-    this.app.use(bodyParser.urlencoded({ extended: false }));
-    // this.app.use("/api/user", userRoutes);
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: false }));
     this.app.use("/api/auth", authRoutes);
     this.app.use("/api/social", socialRoutes);
     this.app.use("/api/tournament", tournamentRoutes);

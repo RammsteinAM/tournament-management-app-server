@@ -1,8 +1,8 @@
 import BadRequestError from "../../errors/BadRequestError";
-import { generateGameCreateData, generateGameUpdateData, generatePlayerConnectData, getPlayersLives, getShuffledNextRoundDYPParticipants, getShuffledNextRoundParticipants, splitGameKey } from "../../helpers";
+import { generateGameCreateData, generateGameUpdateData, generatePlayerConnectData, getActiveTables, getInitiallyActiveTables, getPlayersLives, getShuffledNextRoundDYPParticipants, getShuffledNextRoundParticipants, splitGameKey } from "../../helpers";
 import { arrayAlreadyHasArray, shuffle } from "../../utils/arrayUtils";
 import { getTournamentGames } from "../game/game.service";
-import { GameData, GameInsertData, GamesResData } from "../game/game.types";
+import { GameData, GameInsertData, GamesData, GamesResData, TournamentGameCreateData } from "../game/game.types";
 import Tournament from "./tournament.model";
 import { GamesCreateData, GamesUpdateData, LMSPlayer, LMSPlayers, TournamentCreateData, TournamentData, TournamentDeleteData, TournamentExportData, TournamentExportResData, TournamentGamesData, TournamentResData, TournamentsNormalizedData, TournamentUpdateData } from "./tournament.types";
 
@@ -37,9 +37,10 @@ export const getTournamentPlayers = async (id: number, userId: number): Promise<
 };
 
 export const createTournament = async (data: TournamentCreateData): Promise<TournamentData> => {
-    const gameCreateData = generateGameCreateData(data.games);
+    const gameCreateData: TournamentGameCreateData = generateGameCreateData(data.games);
     const playerConnectData = generatePlayerConnectData(data.players);
-    const tournament = new Tournament({ ...data, newGames: gameCreateData, players: playerConnectData });
+    const activeTables = getInitiallyActiveTables(data.games, data.numberOfTables);
+    const tournament = new Tournament({ ...data, newGames: gameCreateData, players: playerConnectData, tablesByGameIndex: activeTables });
     return await tournament.create();
 }
 
@@ -59,9 +60,12 @@ export const createTournamentGames = async (data: GamesCreateData): Promise<Tour
     return await tournament.createGames();
 }
 
-export const updateTournamentGames = async (data: GamesUpdateData): Promise<TournamentResData> => {
+export const updateTournamentGames = async (data: GamesUpdateData, tournamentGames: GamesData, mainGameIndex: string): Promise<TournamentResData> => {
     const gameUpdateData = generateGameUpdateData(data.games);
     const tournament = new Tournament({ id: data.tournamentId, userId: data.userId, existingGames: gameUpdateData });
+    const tournamentData = await tournament.getById();
+    const activeTables = getActiveTables(tournamentGames, mainGameIndex, tournamentData.tablesByGameIndex);
+    tournament.tablesByGameIndex = activeTables;
     return await tournament.updateGames();
 }
 

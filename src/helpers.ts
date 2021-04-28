@@ -1,6 +1,7 @@
 import { GameCreateConnectionData, GameInsertData, GamesData, GameUpdateDataForMultipleGames, GameUpdateSetData, GameUpdateSetDataWithId, NormalizedGamesData, TournamentGameCreateData, TournamentGameUpdateData } from "./modules/game/game.types";
 import { TournamentCreateData, TournamentPlayerConnectData } from "./modules/tournament/tournament.types";
 import { shuffle } from "./utils/arrayUtils";
+import { thirdPlaceIndex } from "./utils/constants";
 
 interface GameKeyParts {
     round: number;
@@ -60,7 +61,7 @@ export const getMultipleSetScores = (scores1: number[], scores2: number[], sets:
 }
 
 export const splitGameKey = (gameKey: string): GameKeyParts => {
-    if (gameKey === 'thirdPlace') {
+    if (gameKey === thirdPlaceIndex) {
         return { round: -1, gameNumber: -1 };
     }
     return { round: parseInt(gameKey.split('-')[0]), gameNumber: parseInt(gameKey.split('-')[1]) };
@@ -197,7 +198,7 @@ export const getShuffledNextRoundParticipants = (lastRoundParticipantIds: number
             continue;
         }
         if (lastRoundOpponents[nextRoundParticipantIds[i]] === nextRoundParticipantIds[i - 1]) {
-            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 2], nextRoundParticipantIds[i - 1] , nextRoundParticipantIds[i - 3]);
+            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 2], nextRoundParticipantIds[i - 1], nextRoundParticipantIds[i - 3]);
             i = i - 4;
             continue;
         }
@@ -232,7 +233,7 @@ export const getShuffledNextRoundDYPParticipants = (lastRoundParticipantIds: [nu
             continue;
         }
         if (lastRoundOpponents[nextRoundParticipantIds[i][0]] === nextRoundParticipantIds[i - 1][0]) {
-            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 2], nextRoundParticipantIds[i - 1] , nextRoundParticipantIds[i - 3]);
+            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 2], nextRoundParticipantIds[i - 1], nextRoundParticipantIds[i - 3]);
             i = i - 4;
             continue;
         }
@@ -240,4 +241,65 @@ export const getShuffledNextRoundDYPParticipants = (lastRoundParticipantIds: [nu
     }
 
     return shuffledNextRoundParticipantIds;
+}
+
+export const getInitiallyActiveTables = (games: GameInsertData[], numberOfTables: number): { [index: string]: number } => {
+    const gameIndexesToBePlayed = games.reduce((acc: string[], game) => {
+        if (game.hasByePlayer || !game.player1 || !game.player2) {
+            return acc;
+        }
+        if (game.player1[0]?.id && game.player2[0]?.id && (!game.scores1 || game.scores1.length === 0) && (!game.scores2 || game.scores2.length === 0)) {
+            acc.push(game.index)
+        }
+        return acc;
+    }, []).sort();
+
+
+    if (gameIndexesToBePlayed[gameIndexesToBePlayed.length - 1] === thirdPlaceIndex) {
+        gameIndexesToBePlayed[gameIndexesToBePlayed.length - 1] = gameIndexesToBePlayed[gameIndexesToBePlayed.length - 2];
+        gameIndexesToBePlayed[gameIndexesToBePlayed.length - 2] = thirdPlaceIndex;
+    }
+
+    const activeTables: { [index: string]: number } = gameIndexesToBePlayed
+        .slice(0, numberOfTables)
+        .reduce((acc: { [index: string]: number }, val, i) => {
+            acc[val] = i + 1;
+            return acc;
+        }, {});
+    return activeTables;
+}
+
+export const getActiveTables = (games: GamesData, gameIndex: string, tablesByGameIndex: { [index: string]: number }): { [index: string]: number } => {
+    if (!tablesByGameIndex[gameIndex]) {
+        // If updating a game that has no active table assigned.
+        return tablesByGameIndex;
+    }
+
+    const gameIndexesToBePlayed = games.reduce((acc: string[], game) => {
+        if (game.hasByePlayer) {
+            return acc;
+        }
+        if (!game.scores1 || !game.scores2 || game.scores1.length === 0 || game.scores2.length === 0) {
+            acc.push(game.index)
+        }
+        return acc;
+    }, []).sort();
+
+    if (gameIndexesToBePlayed[gameIndexesToBePlayed.length - 1] === thirdPlaceIndex) {
+        gameIndexesToBePlayed[gameIndexesToBePlayed.length - 1] = gameIndexesToBePlayed[gameIndexesToBePlayed.length - 2];
+        gameIndexesToBePlayed[gameIndexesToBePlayed.length - 2] = thirdPlaceIndex;
+    }
+
+    const unassignedGameIndexesToBePlayed = gameIndexesToBePlayed.filter(index => {
+        return !tablesByGameIndex[index];
+    });
+    
+    const newTablesByGameIndex = { ...tablesByGameIndex }
+
+    delete newTablesByGameIndex[gameIndex];
+    if (unassignedGameIndexesToBePlayed[0]) {
+        newTablesByGameIndex[unassignedGameIndexesToBePlayed[0]] = tablesByGameIndex[gameIndex];
+    }
+    
+    return newTablesByGameIndex;
 }

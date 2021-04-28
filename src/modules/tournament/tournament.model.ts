@@ -8,6 +8,7 @@ export default class Tournament {
     name: string;
     sets: number;
     numberOfTables: number;
+    tablesByGameIndex: {};
     numberOfGoals: number;
     numberOfLives: number;
     pointsForWin: number;
@@ -25,6 +26,7 @@ export default class Tournament {
         this.name = data.name;
         this.sets = data.sets;
         this.numberOfTables = data.numberOfTables;
+        this.tablesByGameIndex = data.tablesByGameIndex;
         this.numberOfGoals = data.numberOfGoals;
         this.numberOfLives = data.numberOfLives;
         this.pointsForWin = data.pointsForWin;
@@ -46,6 +48,7 @@ export default class Tournament {
                 numberOfGoals: true,
                 numberOfLives: true,
                 numberOfTables: true,
+                tablesByGameIndex: true,
                 pointsForDraw: true,
                 pointsForWin: true,
                 sets: true,
@@ -86,6 +89,7 @@ export default class Tournament {
                 numberOfGoals: true,
                 numberOfLives: true,
                 numberOfTables: true,
+                tablesByGameIndex: true,
                 pointsForDraw: true,
                 pointsForWin: true,
                 draw: true,
@@ -146,6 +150,7 @@ export default class Tournament {
                 draw: this.draw,
                 monsterDYP: this.monsterDYP,
                 numberOfTables: this.numberOfTables,
+                tablesByGameIndex: this.tablesByGameIndex,
                 numberOfGoals: this.numberOfGoals,
                 numberOfLives: this.numberOfLives,
                 pointsForWin: this.pointsForWin,
@@ -165,6 +170,7 @@ export default class Tournament {
                 numberOfGoals: true,
                 numberOfLives: true,
                 numberOfTables: true,
+                tablesByGameIndex: true,
                 pointsForDraw: true,
                 pointsForWin: true,
                 sets: true,
@@ -226,6 +232,7 @@ export default class Tournament {
                 sets: this.sets,
                 numberOfGoals: this.numberOfGoals,
                 draw: this.draw,
+                tablesByGameIndex: this.tablesByGameIndex,
                 numberOfLives: this.numberOfLives,
                 pointsForWin: this.pointsForWin,
                 pointsForDraw: this.pointsForDraw,
@@ -238,11 +245,13 @@ export default class Tournament {
             where: { id: this.id },
             data: {
                 games: this.existingGames,
+                tablesByGameIndex: this.tablesByGameIndex,
             },
             select: {
                 id: true,
                 name: true,
                 userId: true,
+                tablesByGameIndex: true,
                 games: {
                     select: {
                         id: true,
