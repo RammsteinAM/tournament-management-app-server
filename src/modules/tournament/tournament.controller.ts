@@ -17,42 +17,42 @@ export const getTournaments = asyncWrapper(async (req: RequestWithUserId, res: R
 
 export const getTournament = asyncWrapper(async (req: RequestWithUserId<{ id: string }>, res: Response): Promise<void> => {
     const { id: idFromParam } = req.params;
-    const { id, name, userId, sets, draw, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players } = await tournamentService.getTournamentById(parseInt(idFromParam, 10), req.userId);
+    const { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players } = await tournamentService.getTournamentById(parseInt(idFromParam, 10), req.userId);
     const playerIds = players.map(val => val.id);
     const resBody: ResBody<TournamentResData> = {
         success: true,
-        data: { id, name, userId, sets, draw, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players: playerIds },
+        data: { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players: playerIds },
     };
     res.status(StatusCodesOkay.OK).json(resBody);
 })
 
 export const getTournamentExportData = asyncWrapper(async (req: RequestWithUserId<{ id: string }>, res: Response): Promise<void> => {
     const { id: idFromParam } = req.params;
-    const { name, sets, draw, numberOfLives, numberOfTables, tablesByGameIndex, numberOfGoals, pointsForDraw, pointsForWin, createdAt, games, players } = await tournamentService.getTournamentExportDataById(parseInt(idFromParam, 10), req.userId);
+    const { name, sets, draw, monsterDYP, numberOfLives, numberOfTables, tablesByGameIndex, numberOfGoals, pointsForDraw, pointsForWin, createdAt, games, players } = await tournamentService.getTournamentExportDataById(parseInt(idFromParam, 10), req.userId);
     const resBody: ResBody<TournamentExportResData> = {
         success: true,
-        data: { name, sets, draw, numberOfLives, numberOfTables, tablesByGameIndex, numberOfGoals, pointsForDraw, pointsForWin, createdAt, games, players },
+        data: { name, sets, draw, monsterDYP, numberOfLives, numberOfTables, tablesByGameIndex, numberOfGoals, pointsForDraw, pointsForWin, createdAt, games, players },
     };
     res.status(StatusCodesOkay.OK).json(resBody);
 })
 
 export const createTournament = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
     const data = req.body as TournamentCreateData;
-    const { id, name, userId, sets, draw, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players } = await tournamentService.createTournament({ ...data, userId: req.userId });
+    const { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players } = await tournamentService.createTournament({ ...data, userId: req.userId });
     const playerIds = players.map(val => val.id);
     const resBody: ResBody<TournamentResData> = {
         success: true,
-        data: { id, name, userId, sets, draw, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players: playerIds },
+        data: { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players: playerIds },
     };
     res.status(StatusCodesOkay.Created).json(resBody);
 });
 
 export const editTournament = asyncWrapper(async (req: RequestWithUserId<{ id: number }>, res: Response): Promise<void> => {
     const data = req.body as TournamentUpdateData;
-    const { id, name, userId, sets, draw, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games } = await tournamentService.updateTournament({ ...data, userId: req.userId });
+    const { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games } = await tournamentService.updateTournament({ ...data, userId: req.userId });
     const resBody: ResBody<TournamentResData> = {
         success: true,
-        data: { id, name, userId, sets, draw, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games },
+        data: { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games },
     };
     res.status(StatusCodesOkay.OK).json(resBody);
 })

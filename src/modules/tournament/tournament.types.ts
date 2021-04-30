@@ -47,6 +47,7 @@ export interface TournamentResData {
     numberOfLives?: number;
     numberOfGoals?: number;
     draw?: boolean;
+    monsterDYP?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
     createdAt?: Date;
@@ -64,6 +65,7 @@ export interface TournamentExportResData {
     numberOfTables?: number;
     tablesByGameIndex?: {};
     draw?: boolean;
+    monsterDYP?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
     createdAt: Date;

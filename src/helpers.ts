@@ -20,10 +20,16 @@ export const generateGameCreateData = (games: GameInsertData[]) => {
     const gameConnectionData: GameCreateConnectionData[] | undefined = (games && games.length > 0) ? games.map(game => {
         const player1ConnectData = [];
         const player2ConnectData = [];
-        if (game.player1 && game.player1[0]?.id) player1ConnectData.push(game.player1[0]);
-        if (game.player1 && game.player1[1]?.id) player1ConnectData.push(game.player1[1]);
-        if (game.player2 && game.player2[0]?.id) player2ConnectData.push(game.player2[0]);
-        if (game.player2 && game.player2[1]?.id) player2ConnectData.push(game.player2[1]);
+        if (game.player1 && game.player1[0]?.id) {
+            player1ConnectData.push(game.player1[0]);
+        }
+        if (game.player2 && game.player2[0]?.id) {
+            player2ConnectData.push(game.player2[0]);
+        }
+        if (game.player1 && game.player2 && game.player1[1]?.id && game.player2[1]?.id) {
+            player1ConnectData.push(game.player1[1]);
+            player2ConnectData.push(game.player2[1]);
+        }
         const result: GameCreateConnectionData = { index: game.index };
         if (player1ConnectData.length > 0) {
             result.player1 = { connect: player1ConnectData }
@@ -38,10 +44,10 @@ export const generateGameCreateData = (games: GameInsertData[]) => {
     return gameCreateData;
 }
 
-export const getMultipleSetScores = (scores1: number[], scores2: number[], sets: number): { score1: number, score2: number, winners: number[] } => {
+export const getMultipleSetScores = (scores1: number[], scores2: number[]): { score1: number, score2: number, winners: number[] } => {
     let score1 = scores1[0], score2 = scores2[0];
     const winners: number[] = [];
-    if (sets > 1) {
+    if (scores1.length > 1) {
         score1 = 0;
         score2 = 0;
         for (let i = 0; i <= scores1.length; i++) {
@@ -123,126 +129,6 @@ export const generateGameUpdateData = (games: GameUpdateDataForMultipleGames[]) 
     return gameUpdateData;
 }
 
-export const getPlayersLives = (tournamentGames: GamesData, tournamentPlayers: number[], numberOfLives: number) => {
-
-    const playerInitialLives = tournamentPlayers.reduce((acc: { [id: number]: number }, val) => {
-        acc[val] = numberOfLives;
-        return acc;
-    }, {});
-
-    const playerLives = tournamentGames.reduce((acc, val) => {
-        if (!val.scores1 || !val.scores2 || val.scores1.length === 0 || val.scores2.length === 0) {
-            return acc;
-        }
-        const { score1, score2 } = getMultipleSetScores(val.scores1, val.scores2, val.scores1.length);
-
-        if (!val.player1 || !val.player2) {
-            return acc;
-        }
-
-        const id1_0 = val.player1[0] && val.player1[0].id;
-        const id1_1 = val.player1[1] && val.player1[1].id;
-        const id2_0 = val.player2[0] && val.player2[0].id;
-        const id2_1 = val.player2[1] && val.player2[1].id;
-
-        // SINGLE, TEAM
-        if (id1_0 && id2_0 && typeof acc[id1_0] === 'number' && typeof acc[id2_0] === 'number' && !id1_1 && !id2_1) {
-            if (score1 > score2) {
-                acc[id2_0]--;
-            }
-            if (score1 < score2) {
-                acc[id1_0]--;
-            }
-        }
-
-        // DYP
-        else if (id1_0 && id2_0 && id1_1 && id2_1) {
-            if (score1 > score2) {
-                acc[id2_0]--;
-                acc[id2_1]--;
-            }
-            if (score1 < score2) {
-                acc[id1_0]--;
-                acc[id1_1]--;
-            }
-        }
-
-        return acc;
-    }, playerInitialLives);
-
-    return playerLives;
-};
-
-export const getShuffledNextRoundParticipants = (lastRoundParticipantIds: number[], lastRoundAliveParticipantIds: number[], waitingParticipantIds: number[]) => {
-    const nextRoundParticipantIds: number[] = [...waitingParticipantIds, ...shuffle(lastRoundAliveParticipantIds)];
-    if (nextRoundParticipantIds.length % 2 === 1) {
-        // If even number of players, remove a player that played in the last round.
-        nextRoundParticipantIds.pop();
-    }
-
-    const lastRoundOpponents = lastRoundParticipantIds.reduce((acc: { [id: number]: number }, val, i: number, arr) => {
-        if (i % 2 === 0) {
-            acc[val] = arr[i + 1];
-        }
-        if (i % 2 === 1) {
-            acc[val] = arr[i - 1];
-        }
-        return acc;
-    }, {})
-    const shuffledNextRoundParticipantIds: number[] = [];
-    let i = nextRoundParticipantIds.length - 1;
-    while (i >= 0) {
-        if (lastRoundOpponents[nextRoundParticipantIds[i]] !== nextRoundParticipantIds[i - 1]) {
-            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 1]);
-            i = i - 2;
-            continue;
-        }
-        if (lastRoundOpponents[nextRoundParticipantIds[i]] === nextRoundParticipantIds[i - 1]) {
-            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 2], nextRoundParticipantIds[i - 1], nextRoundParticipantIds[i - 3]);
-            i = i - 4;
-            continue;
-        }
-        break;
-    }
-
-    return shuffledNextRoundParticipantIds;
-}
-
-export const getShuffledNextRoundDYPParticipants = (lastRoundParticipantIds: [number, number][], lastRoundAliveParticipantIds: [number, number][], waitingParticipantIds: [number, number][]) => {
-    const nextRoundParticipantIds: [number, number][] = [...waitingParticipantIds, ...shuffle(lastRoundAliveParticipantIds)];
-    if (nextRoundParticipantIds.length % 2 === 1) {
-        // If even number of players, remove a player that played in the last round.
-        nextRoundParticipantIds.pop();
-    }
-
-    const lastRoundOpponents = lastRoundParticipantIds.reduce((acc: { [id: number]: number }, val: [number, number], i: number, arr: [number, number][]) => {
-        if (i % 2 === 0) {
-            acc[val[0]] = arr[i + 1][0];
-        }
-        if (i % 2 === 1) {
-            acc[val[0]] = arr[i - 1][0];
-        }
-        return acc;
-    }, {})
-    const shuffledNextRoundParticipantIds: [number, number][] = [];
-    let i = nextRoundParticipantIds.length - 1;
-    while (i >= 0) {
-        if (lastRoundOpponents[nextRoundParticipantIds[i][0]] !== nextRoundParticipantIds[i - 1][0]) {
-            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 1]);
-            i = i - 2;
-            continue;
-        }
-        if (lastRoundOpponents[nextRoundParticipantIds[i][0]] === nextRoundParticipantIds[i - 1][0]) {
-            shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 2], nextRoundParticipantIds[i - 1], nextRoundParticipantIds[i - 3]);
-            i = i - 4;
-            continue;
-        }
-        break;
-    }
-
-    return shuffledNextRoundParticipantIds;
-}
-
 export const getInitiallyActiveTables = (games: GameInsertData[], numberOfTables: number): { [index: string]: number } => {
     const gameIndexesToBePlayed = games.reduce((acc: string[], game) => {
         if (game.hasByePlayer || !game.player1 || !game.player2) {
@@ -293,13 +179,13 @@ export const getActiveTables = (games: GamesData, gameIndex: string, tablesByGam
     const unassignedGameIndexesToBePlayed = gameIndexesToBePlayed.filter(index => {
         return !tablesByGameIndex[index];
     });
-    
+
     const newTablesByGameIndex = { ...tablesByGameIndex }
 
     delete newTablesByGameIndex[gameIndex];
     if (unassignedGameIndexesToBePlayed[0]) {
         newTablesByGameIndex[unassignedGameIndexesToBePlayed[0]] = tablesByGameIndex[gameIndex];
     }
-    
+
     return newTablesByGameIndex;
 }

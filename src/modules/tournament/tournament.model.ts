@@ -124,6 +124,7 @@ export default class Tournament {
                 id: true,
                 name: true,
                 numberOfLives: true,
+                monsterDYP: true,
                 sets: true,
                 userId: true,
                 createdAt: true,

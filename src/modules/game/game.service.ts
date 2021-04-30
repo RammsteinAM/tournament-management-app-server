@@ -46,7 +46,7 @@ export const updateGameAndNextGames = async (data: GameUpdateData, gameId: numbe
     const finalRoundNumber = Object.values(normalizedGames).map(game => splitGameKey(game.index).round).sort(function (a, b) { return b - a })[0];
     const isGameOdd = splitGameKey(dbGame.index).gameNumber % 2 === 1;
     const round = splitGameKey(dbGame.index).round;
-    const { score1, score2 } = getMultipleSetScores(data.scores1, data.scores2, Object.keys(data.scores1).length);
+    const { score1, score2 } = getMultipleSetScores(data.scores1, data.scores2);
 
     const winner = score1 > score2 ? dbGame.player1 : dbGame.player2;
     const loser = score1 > score2 ? dbGame.player2 : dbGame.player1;
@@ -125,8 +125,8 @@ export const updateGameAndNextGames = async (data: GameUpdateData, gameId: numbe
         }
 
         if (game.player1 && game.player2 && game.scores1 && winner && loser && game.scores2 && game.scores1.length > 0 && game.scores2.length > 0) {
-            const score1 = getMultipleSetScores(game.scores1, game.scores2, Object.keys(game.scores1).length).score1;
-            const score2 = getMultipleSetScores(game.scores1, game.scores2, Object.keys(game.scores1).length).score2;
+            const score1 = getMultipleSetScores(game.scores1, game.scores2).score1;
+            const score2 = getMultipleSetScores(game.scores1, game.scores2).score2;
             const p1JSON = JSON.stringify(game.player1);
             const p2JSON = JSON.stringify(game.player2);
             const winnerJSON = JSON.stringify(winner);
