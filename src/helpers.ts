@@ -44,6 +44,36 @@ export const generateGameCreateData = (games: GameInsertData[]) => {
     return gameCreateData;
 }
 
+export const generateGameCreateDataForImportedTournament = (games: GameInsertData[]) => {
+    const gameConnectionData: GameCreateConnectionData[] | undefined = (games && games.length > 0) ? games.map(game => {
+        const player1ConnectData = [];
+        const player2ConnectData = [];
+        if (game.player1 && game.player1[0]?.id) {
+            player1ConnectData.push(game.player1[0]);
+        }
+        if (game.player2 && game.player2[0]?.id) {
+            player2ConnectData.push(game.player2[0]);
+        }
+        if (game.player1 && game.player2 && game.player1[1]?.id && game.player2[1]?.id) {
+            player1ConnectData.push(game.player1[1]);
+            player2ConnectData.push(game.player2[1]);
+        }
+        const result: GameCreateConnectionData = { index: game.index };
+        result.scores1 = [...game.scores1];
+        result.scores2 = [...game.scores2];
+        if (player1ConnectData.length > 0) {
+            result.player1 = { connect: player1ConnectData }
+        }
+        if (player2ConnectData.length > 0) {
+            result.player2 = { connect: player2ConnectData }
+        }
+        result.hasByePlayer = game.hasByePlayer;
+        return result;
+    }) : undefined;
+    const gameCreateData: TournamentGameCreateData = gameConnectionData ? { create: gameConnectionData } : undefined;
+    return gameCreateData;
+}
+
 export const getMultipleSetScores = (scores1: number[], scores2: number[]): { score1: number, score2: number, winners: number[] } => {
     let score1 = scores1[0], score2 = scores2[0];
     const winners: number[] = [];

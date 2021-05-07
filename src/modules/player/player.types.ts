@@ -42,3 +42,4 @@ export interface PlayersInstanceData {
 }
 
 export type DBPlayer = { id: number }[]
+export type DBPlayerWithName = { id: number, name: string }[]

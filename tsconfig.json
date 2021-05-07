@@ -10,14 +10,18 @@
         "baseUrl": ".",
         "lib": [
             "es2019"
-          ],
+        ]
         // "paths": {
         //     "src/*": ["src/*"],
         //     "@app/*": ["src/*"],
         //     "@reducers/*": ["src/reducers/*"],
         // }
     },
+    "ts-node": {
+        "transpileOnly": true
+    },
     "include": [
-        "src/**/*"
+        "src/**/*",
+        "src/vendor.d.ts"
     ]
 }

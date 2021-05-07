@@ -3,7 +3,7 @@ import { asyncWrapper } from "../../utils/asyncWrapper";
 import * as tournamentService from './tournament.service';
 import { StatusCodesOkay } from '../../types/status';
 import { RequestWithUserId, ResBody } from '../../types/main';
-import { TournamentCreateData, TournamentExportResData, TournamentGamesData, TournamentResData, TournamentUpdateData } from "./tournament.types";
+import { TournamentCreateData, TournamentJSONData, TournamentGamesData, TournamentResData, TournamentUpdateData } from "./tournament.types";
 import { GamesCreateData } from "../tournament/tournament.types";
 import { GamesResData } from "../game/game.types";
 
@@ -17,32 +17,42 @@ export const getTournaments = asyncWrapper(async (req: RequestWithUserId, res: R
 
 export const getTournament = asyncWrapper(async (req: RequestWithUserId<{ id: string }>, res: Response): Promise<void> => {
     const { id: idFromParam } = req.params;
-    const { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players } = await tournamentService.getTournamentById(parseInt(idFromParam, 10), req.userId);
+    const { id, name, userId, sets, draw, monsterDYP, tournamentTypeId, shareId, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players } = await tournamentService.getTournamentById(parseInt(idFromParam, 10), req.userId);
     const playerIds = players.map(val => val.id);
     const resBody: ResBody<TournamentResData> = {
         success: true,
-        data: { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players: playerIds },
+        data: { id, name, userId, sets, draw, monsterDYP, tournamentTypeId, shareId, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players: playerIds },
     };
     res.status(StatusCodesOkay.OK).json(resBody);
 })
 
 export const getTournamentExportData = asyncWrapper(async (req: RequestWithUserId<{ id: string }>, res: Response): Promise<void> => {
     const { id: idFromParam } = req.params;
-    const { name, sets, draw, monsterDYP, numberOfLives, numberOfTables, tablesByGameIndex, numberOfGoals, pointsForDraw, pointsForWin, createdAt, games, players } = await tournamentService.getTournamentExportDataById(parseInt(idFromParam, 10), req.userId);
-    const resBody: ResBody<TournamentExportResData> = {
+    const { name, sets, draw, tournamentTypeId, monsterDYP, numberOfLives, numberOfTables, tablesByGameIndex, numberOfGoals, pointsForDraw, pointsForWin, games, players } = await tournamentService.getTournamentExportDataById(parseInt(idFromParam, 10), req.userId);
+    const resBody: ResBody<TournamentJSONData> = {
         success: true,
-        data: { name, sets, draw, monsterDYP, numberOfLives, numberOfTables, tablesByGameIndex, numberOfGoals, pointsForDraw, pointsForWin, createdAt, games, players },
+        data: { name, sets, draw, monsterDYP, tournamentTypeId, numberOfLives, numberOfTables, tablesByGameIndex, numberOfGoals, pointsForDraw, pointsForWin, games, players },
     };
     res.status(StatusCodesOkay.OK).json(resBody);
 })
 
 export const createTournament = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
-    const data = req.body as TournamentCreateData;
-    const { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players } = await tournamentService.createTournament({ ...data, userId: req.userId });
+    const reqData = req.body as TournamentCreateData;
+    const data = await tournamentService.createTournament({ ...reqData, userId: req.userId });
+    const resBody: ResBody<TournamentResData> = {
+        success: true,
+        data,
+    };
+    res.status(StatusCodesOkay.Created).json(resBody);
+});
+
+export const importTournament = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
+    const data = req.body as TournamentJSONData;
+    const { id, name, userId, sets, draw, monsterDYP, tournamentTypeId, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players } = await tournamentService.importTournament({ ...data, userId: req.userId });
     const playerIds = players.map(val => val.id);
     const resBody: ResBody<TournamentResData> = {
         success: true,
-        data: { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players: playerIds },
+        data: { id, name, userId, sets, draw, monsterDYP, tournamentTypeId, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, players: playerIds },
     };
     res.status(StatusCodesOkay.Created).json(resBody);
 });
@@ -54,6 +64,9 @@ export const editTournament = asyncWrapper(async (req: RequestWithUserId<{ id: n
         success: true,
         data: { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games },
     };
+    if (global.socket && data.shareId) {
+        global.socket.emit(data.shareId)
+    }
     res.status(StatusCodesOkay.OK).json(resBody);
 })
 
@@ -84,5 +97,27 @@ export const createNewLMSRound = asyncWrapper(async (req: RequestWithUserId, res
         success: true,
         data: { [tournamentId]: data.games },
     };
+    if (global.socket && data.shareId) {
+        global.socket.emit(data.shareId)
+    }
     res.status(StatusCodesOkay.Created).json(resBody);
 });
+
+export const giveTournamentShareAccess = asyncWrapper(async (req: RequestWithUserId<{ id: string }>, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { shareId } = await tournamentService.giveTournamentShareAccess({ id: parseInt(id, 10), userId: req.userId });
+    const resBody: ResBody<{ shareId: string }> = {
+        success: true,
+        data: { shareId },
+    };
+    res.status(StatusCodesOkay.OK).json(resBody);
+})
+
+export const revokeTournamentShareAccess = asyncWrapper(async (req: RequestWithUserId<{ id: string }>, res: Response): Promise<void> => {
+    const { id } = req.params;
+    await tournamentService.revokeTournamentShareAccess({ id: parseInt(id, 10), userId: req.userId });
+    const resBody: ResBody = {
+        success: true
+    };
+    res.status(StatusCodesOkay.OK).json(resBody);
+})

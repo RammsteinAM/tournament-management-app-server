@@ -15,7 +15,7 @@ export const registerUser = asyncWrapper(async (req: Request, res: Response): Pr
     locale = reqLocale as Locales;
   }
   validateUserCreate(data);
-  const { id, displayName, email, createdAt, updatedAt } = await authServices.registerUserService(data, locale);
+  const { id, displayName, email, createdAt, updatedAt } = await authServices.registerUser(data, locale);
   const resBody: ResBody<UserCreationData> = {
     success: true,
     data: { id, displayName, email },
@@ -25,7 +25,7 @@ export const registerUser = asyncWrapper(async (req: Request, res: Response): Pr
 
 export const checkEmail = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
   const data = req.body as EmailCheckData;
-  await authServices.isEmailRegisteredService(data.email);
+  await authServices.isEmailRegistered(data.email);
   const resBody: ResBody = {
     success: true
   };
@@ -34,7 +34,7 @@ export const checkEmail = asyncWrapper(async (req: Request, res: Response): Prom
 
 export const verifyUser = asyncWrapper(async (req: Request<UserVerificationData>, res: Response): Promise<void> => {
   const { token } = req.params;
-  const { id, email, displayName, isVerified } = await authServices.verifyUserService({ token });
+  const { id, email, displayName, isVerified } = await authServices.verifyUser({ token });
   const resBody: ResBody<UserVerifiedData> = {
     success: true,
     data: { id, displayName, email, isVerified },
@@ -61,7 +61,7 @@ export const loginCheck = asyncWrapper(async (req: Request, res: Response): Prom
     accessToken: cookieAccessToken,
     refreshToken
   }
-  const data = await authServices.loginCheckService(tokenData);
+  const data = await authServices.loginCheck(tokenData);
 
   const reqBody: ResBody<UserCreationData> = {
     success: true,
@@ -120,7 +120,7 @@ export const resetPassword = asyncWrapper(async (req: RequestWithUserId, res: Re
   const { token } = req.params;
   const data = req.body as UserResetPasswordRequestData;
   validateUserUpdate({ password: data.password });
-  const { email } = await authServices.resetPasswordService({ token, password: data.password });
+  const { email } = await authServices.resetPassword({ token, password: data.password });
   const resBody: ResBody<UserLoginData> = {
     success: true,
     message: `Password for ${email} was reset`,

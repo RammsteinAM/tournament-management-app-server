@@ -7,13 +7,12 @@ import User from "./auth.model";
 import UnprocessableEntity from "../../errors/UnprocessableEntity";
 import UnauthorizedError from "../../errors/UnauthorizedError";
 import { Locales, TokenDurationFor } from "../../types/main";
-import InternalServerError from "../../errors/InternalServerError";
 import { getDateDiffInSeconds } from "../../utils/dateUtils";
 import { ErrorNames } from "../../types/error";
 import NotFoundError from "../../errors/NotFoundError";
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, VERIFICATION_TOKEN_SECRET } = process.env;
 
-export const registerUserService = async (userCreationData: UserCreateData, locale: keyof typeof Locales): Promise<UserData> => {
+export const registerUser = async (userCreationData: UserCreateData, locale: keyof typeof Locales): Promise<UserData> => {
     const encryptedPassword = await encryptPasswordAsync(userCreationData.password);
     const userData = { ...userCreationData, password: encryptedPassword };
     const user = new User(userData);
@@ -22,12 +21,11 @@ export const registerUserService = async (userCreationData: UserCreateData, loca
         throw new BadRequestError("Email already in use", ErrorNames.EmailInUse);
     }
     const createdUser = await user.create();
-    if (!createdUser) throw new InternalServerError();
     generateAndSendVerificationEmail(createdUser, locale);
     return createdUser;
 }
 
-export const isEmailRegisteredService = async (email: string): Promise<void> => {
+export const isEmailRegistered = async (email: string): Promise<void> => {
     const user = new User({ email });
     const existingUser = await user.getByEmail();
     if (existingUser) {
@@ -40,12 +38,12 @@ export const generateAndSendVerificationEmail = async (dbUser: UserData, locale:
     if (resend && getDateDiffInSeconds(dbUser.updatedAt) < 60) throw new BadRequestError("Cannot process the request", ErrorNames.EmailRequestSmallInterval);
     const user = new User({ id: dbUser.id });
     const token = createToken(dbUser.id, VERIFICATION_TOKEN_SECRET, TokenDurationFor.Verification);
-    user.setVerificationToken(token);
+    await user.setVerificationToken(token);
     const emailData = generateVerificationEmail(dbUser.email, dbUser.displayName, token, locale);
     await sendEmail(emailData);
 }
 
-export const verifyUserService = async (data: UserVerificationData): Promise<UserData> => {
+export const verifyUser = async (data: UserVerificationData): Promise<UserData> => {
     const tokenData: DecodedTokenData = getVerifiedData(data.token, VERIFICATION_TOKEN_SECRET);
     const user = new User(tokenData);
     const existingUser = await user.getById();
@@ -95,7 +93,7 @@ export const sendPasswordResetEmail = async (email: string, locale: keyof typeof
     await sendEmail(emailData);
 }
 
-export const resetPasswordService = async (data: UserResetPasswordData): Promise<UserData> => {
+export const resetPassword = async (data: UserResetPasswordData): Promise<UserData> => {
     const tokenData: DecodedTokenData = getVerifiedData(data.token, VERIFICATION_TOKEN_SECRET);
     const encryptedPassword = await encryptPasswordAsync(data.password);
     const user = new User({ ...tokenData, password: encryptedPassword });
@@ -118,7 +116,7 @@ export const obtainAccessTokenFromRefreshToken = async (refreshToken: string): P
     return accessToken;
 }
 
-export const loginCheckService = async (tokenData: UserLoginTokenData): Promise<UserLoginCheckResData> => {
+export const loginCheck = async (tokenData: UserLoginTokenData): Promise<UserLoginCheckResData> => {
     const { accessToken, refreshToken } = tokenData;
 
     let validAccessTokenData: DecodedTokenData;
@@ -165,7 +163,7 @@ export const deleteAccountEmailRequest = async (id: number, locale: keyof typeof
     const dbUser = await user.getById();
     if (!dbUser) throw new BadRequestError("User not found", ErrorNames.UserNotFound);
     const token = createToken(dbUser.id, VERIFICATION_TOKEN_SECRET, TokenDurationFor.DeleteAccount);
-    user.setVerificationToken(token);
+    await user.setVerificationToken(token);
     const emailData = generateDeleteAccountEmail(dbUser.email, dbUser.displayName, token, locale);
     await sendEmail(emailData);
     return user;

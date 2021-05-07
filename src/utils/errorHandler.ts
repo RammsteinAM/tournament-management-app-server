@@ -4,7 +4,7 @@ import { StatusCodesError } from "../../src/types/status";
 import { ErrorNames } from "../types/error";
 
 const errorHandler = (
-    err: any,
+    err: Error,
     req: Request,
     res: Response,
     next: NextFunction

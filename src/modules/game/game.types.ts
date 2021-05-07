@@ -1,4 +1,4 @@
-import { DBPlayer } from "../player/player.types";
+import { DBPlayer, DBPlayerWithName } from "../player/player.types";
 
 export type TournamentDataWithUserId<T> = T & { userId: number }
 
@@ -43,7 +43,27 @@ export interface GameData {
     tournamentId?: number;
 }
 
+export interface GameViewData {
+    index: string;
+    player1?: DBPlayerWithName,
+    player2?: DBPlayerWithName,
+    scores1?: number[];
+    scores2?: number[];
+    hasByePlayer?: boolean;
+}
+
+export interface ImportedGameData {
+    index: string;
+    player1?: DBPlayerWithName,
+    player2?: DBPlayerWithName,
+    scores1?: number[];
+    scores2?: number[];
+    hasByePlayer?: boolean;
+}
+
 export type GamesData = GameData[];
+export type GamesViewData = GameViewData[];
+export type ImportedGamesData = ImportedGameData[];
 
 export type NormalizedGamesData = { [index: string]: GameData };
 

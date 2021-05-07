@@ -1,7 +1,6 @@
 import prisma from "../../../prisma/prisma";
-import { GamesResData, TournamentGameCreateData, TournamentGameUpdateData } from "../game/game.types";
-import { DBPlayer } from "../player/player.types";
-import { TournamentData, TournamentExportData, TournamentExportResData, TournamentGamesData, TournamentInstanceData, TournamentPlayerConnectData, TournamentResData } from "./tournament.types";
+import { TournamentGameCreateData, TournamentGameUpdateData } from "../game/game.types";
+import { TournamentData, TournamentGamesData, TournamentInstanceData, TournamentJSONData, TournamentPlayerConnectData, TournamentResData } from "./tournament.types";
 export default class Tournament {
     id: number;
     userId: number;
@@ -19,6 +18,7 @@ export default class Tournament {
     newGames: TournamentGameCreateData;
     existingGames: TournamentGameUpdateData;
     tournamentTypeId: number;
+    shareId: string;
     players: TournamentPlayerConnectData;
     constructor(data: TournamentInstanceData) {
         this.id = data.id;
@@ -36,6 +36,7 @@ export default class Tournament {
         this.newGames = data.newGames;
         this.existingGames = data.existingGames;
         this.tournamentTypeId = data.tournamentTypeId;
+        this.shareId = data.shareId;
         this.players = data.players;
     }
 
@@ -57,6 +58,7 @@ export default class Tournament {
                 draw: true,
                 monsterDYP: true,
                 tournamentTypeId: true,
+                shareId: true,
                 createdAt: true,
                 updatedAt: true,
                 players: {
@@ -80,7 +82,48 @@ export default class Tournament {
         });
     }
 
-    async getExportDataById(): Promise<TournamentExportData> {
+    async getForView(): Promise<TournamentData> {
+        return await prisma.tournament.findUnique({
+            where: { shareId: this.shareId },
+            select: {
+                id: true,
+                name: true,
+                numberOfGoals: true,
+                numberOfLives: true,
+                numberOfTables: true,
+                tablesByGameIndex: true,
+                pointsForDraw: true,
+                pointsForWin: true,
+                sets: true,
+                tournamentType: true,
+                userId: true,
+                draw: true,
+                monsterDYP: true,
+                tournamentTypeId: true,
+                createdAt: true,
+                updatedAt: true,
+                players: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                },
+                games: {
+                    select: {
+                        id: true,
+                        index: true,
+                        player1: { select: { id: true, name: true } },
+                        player2: { select: { id: true, name: true } },
+                        scores1: true,
+                        scores2: true,
+                        hasByePlayer: true,
+                    }
+                }
+            }
+        });
+    }
+
+    async getExportDataById(): Promise<TournamentJSONData> {
         return await prisma.tournament.findUnique({
             where: { id: this.id },
             select: {
@@ -115,6 +158,16 @@ export default class Tournament {
             }
 
         });
+    }
+
+    async getShareId(): Promise<string> {
+        const tournament =  await prisma.tournament.findUnique({
+            where: { id: this.id },
+            select: {
+                shareId: true,
+            }
+        });
+        return tournament.shareId;
     }
 
     async getByIdForPlayers(): Promise<TournamentData> {
@@ -182,6 +235,7 @@ export default class Tournament {
                 draw: true,
                 monsterDYP: true,
                 tournamentTypeId: true,
+                shareId: true,
                 players: {
                     select: {
                         id: true
@@ -210,6 +264,7 @@ export default class Tournament {
             },
             select: {
                 id: true,
+                shareId: true,
                 games: {
                     select: {
                         id: true,
@@ -237,6 +292,7 @@ export default class Tournament {
                 numberOfLives: this.numberOfLives,
                 pointsForWin: this.pointsForWin,
                 pointsForDraw: this.pointsForDraw,
+                shareId: this.shareId,
             }
         });
     }
@@ -253,6 +309,7 @@ export default class Tournament {
                 name: true,
                 userId: true,
                 tablesByGameIndex: true,
+                shareId: true,
                 games: {
                     select: {
                         id: true,
@@ -284,5 +341,4 @@ export default class Tournament {
             }
         })
     }
-
 }

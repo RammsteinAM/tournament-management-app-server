@@ -1,5 +1,5 @@
-import { GameData, GameInsertData, GamesData, GameUpdateDataForMultipleGames, TournamentGameCreateData, TournamentGameUpdateData } from "../game/game.types";
-import { DBPlayer } from "../player/player.types";
+import { GameData, GameInsertData, GamesData, GameUpdateDataForMultipleGames, GameViewData, ImportedGamesData, TournamentGameCreateData, TournamentGameUpdateData } from "../game/game.types";
+import { DBPlayer, DBPlayerWithName } from "../player/player.types";
 
 export type TournamentDataWithUserId<T> = T & { userId: number }
 
@@ -30,9 +30,10 @@ export interface TournamentUpdateData {
     thirdPlace?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
+    shareId?: string;
 }
 
-export interface TournamentDeleteData {
+export interface TournamentBaseData {
     userId: number;
     id: number;
 }
@@ -50,6 +51,8 @@ export interface TournamentResData {
     monsterDYP?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
+    tournamentTypeId?: number;
+    shareId?: string;
     createdAt?: Date;
     updatedAt?: Date;
     games: GamesData;
@@ -57,7 +60,7 @@ export interface TournamentResData {
 }
 
 
-export interface TournamentExportResData {
+export interface TournamentJSONData {
     name: string;
     sets: number;
     numberOfLives?: number;
@@ -68,9 +71,8 @@ export interface TournamentExportResData {
     monsterDYP?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
-    createdAt: Date;
-    tournamentTypeId?: number;
-    games?: Omit<GameData, 'id' | 'tournamentId'>[];
+    tournamentTypeId: number;
+    games: ImportedGamesData;
     players?: { id: number, name: string }[];
 }
 
@@ -87,13 +89,16 @@ export interface TournamentData {
     monsterDYP?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
+    tournamentTypeId?: number;
     games?: GamesData;
     players?: DBPlayer;
+    shareId?: string;
     createdAt: Date;
     updatedAt: Date;
 }
 
-export interface TournamentExportData {
+
+export interface TournamentViewData {
     name?: string;
     sets?: number;
     numberOfTables?: number;
@@ -104,13 +109,16 @@ export interface TournamentExportData {
     monsterDYP?: boolean;
     pointsForWin?: number,
     pointsForDraw?: number;
-    games?: Omit<GameData, 'id' | 'tournamentId'>[];
-    players?: { id: number, name: string }[];
+    tournamentTypeId?: number;
+    games?: GameViewData;
+    players?: DBPlayerWithName;
     createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface TournamentGamesData {
     id: number;
+    shareId?: string;
     games?: GamesData;
 }
 
@@ -133,6 +141,7 @@ export interface TournamentInstanceData {
     newGames?: TournamentGameCreateData;
     existingGames?: TournamentGameUpdateData;
     tournamentTypeId?: number;
+    shareId?: string;
 }
 
 export interface Player {

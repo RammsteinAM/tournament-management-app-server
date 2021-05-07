@@ -24,7 +24,7 @@ export const generateVerificationEmail = (email: string, displayName: string, to
     return message;
 }
 
-export const generatePasswordResetEmail =   (email: string, displayName: string, token: string, locale: keyof typeof Locales) => {
+export const generatePasswordResetEmail = (email: string, displayName: string, token: string, locale: keyof typeof Locales) => {
     const name = displayName || email;
 
     const message: EmailWithButtonMessage = {

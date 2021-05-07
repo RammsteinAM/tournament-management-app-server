@@ -122,6 +122,14 @@ export const getShuffledNextRoundDYPParticipants = (lastRoundParticipantIds: [nu
     return shuffledNextRoundParticipantIds;
 }
 
+const swapParticipantsToNonRepetitivePairs = (lastRoundTeammates: { [id: number]: number }, shuffledNextRoundParticipantIds: number[]) => {
+    const arrLength = shuffledNextRoundParticipantIds.length;
+    const tempLastElement = shuffledNextRoundParticipantIds[arrLength - 1];
+    const randomIndex = Math.floor(Math.random() * (arrLength - 2));
+    shuffledNextRoundParticipantIds[arrLength - 1] = shuffledNextRoundParticipantIds[randomIndex]
+    shuffledNextRoundParticipantIds[randomIndex] = tempLastElement;
+}
+
 export const getShuffledNextRoundMonsterDYPParticipants = (lastRoundParticipantIds: number[], lastRoundAliveParticipantIds: number[], waitingParticipantIds: number[]) => {
     const nextRoundParticipantIds: number[] = [...waitingParticipantIds, ...shuffle(lastRoundAliveParticipantIds)];
     if (nextRoundParticipantIds.length > 4) {
@@ -138,23 +146,22 @@ export const getShuffledNextRoundMonsterDYPParticipants = (lastRoundParticipantI
     }
 
     shuffle(nextRoundParticipantIds);
-
     if (nextRoundParticipantIds.length >= 4) {
-        const lastRoundOpponents = lastRoundParticipantIds.reduce((acc: { [id: number]: [number, number] }, val: number, i: number, arr: number[]) => {
-            if (i % 4 === 0) {
-                acc[val] = [arr[i + 2], arr[i + 3]];
-            }
-            if ((i - 1) % 4 === 0) {
-                acc[val] = [arr[i + 1], arr[i + 2]];
-            }
-            if ((i - 2) % 4 === 0) {
-                acc[val] = [arr[i - 2], arr[i - 1]];
-            }
-            if ((i - 3) % 4 === 0) {
-                acc[val] = [arr[i - 3], arr[i - 2]];
-            }
-            return acc;
-        }, {})
+        // const lastRoundOpponents = lastRoundParticipantIds.reduce((acc: { [id: number]: [number, number] }, val: number, i: number, arr: number[]) => {
+        //     if (i % 4 === 0) {
+        //         acc[val] = [arr[i + 2], arr[i + 3]];
+        //     }
+        //     if ((i - 1) % 4 === 0) {
+        //         acc[val] = [arr[i + 1], arr[i + 2]];
+        //     }
+        //     if ((i - 2) % 4 === 0) {
+        //         acc[val] = [arr[i - 2], arr[i - 1]];
+        //     }
+        //     if ((i - 3) % 4 === 0) {
+        //         acc[val] = [arr[i - 3], arr[i - 2]];
+        //     }
+        //     return acc;
+        // }, {})
         const lastRoundTeammates = lastRoundParticipantIds.reduce((acc: { [id: number]: number }, val: number, i: number, arr: number[]) => {
             if (i % 2 === 0) {
                 acc[val] = arr[i + 1];
@@ -172,14 +179,30 @@ export const getShuffledNextRoundMonsterDYPParticipants = (lastRoundParticipantI
                 i = i - 2;
                 continue;
             }
+
             if (lastRoundTeammates[nextRoundParticipantIds[i]] === nextRoundParticipantIds[i - 1]) {
-                shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 2], nextRoundParticipantIds[i - 1], nextRoundParticipantIds[i - 3]);
-                i = i - 4;
+                if (nextRoundParticipantIds[i - 2] && nextRoundParticipantIds[i - 3]) {
+                    
+                    shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 2], nextRoundParticipantIds[i - 1], nextRoundParticipantIds[i - 3]);
+                    if (lastRoundTeammates[nextRoundParticipantIds[i - 1]] === nextRoundParticipantIds[i - 3]) {
+                        swapParticipantsToNonRepetitivePairs(lastRoundTeammates, shuffledNextRoundParticipantIds);
+                    }
+                    i = i - 4;
+                }
+                else {
+                    shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 1]);
+                    /*
+                    Since in the last round next two participants were teammates,
+                    none of them could be anyone else's pair, therefore we can
+                    swap one of them with any other participant.
+                    */
+                    swapParticipantsToNonRepetitivePairs(lastRoundTeammates, shuffledNextRoundParticipantIds);
+                    i = i - 2;
+                }
                 continue;
             }
             break;
         }
-
         return shuffledNextRoundParticipantIds;
     } else if (nextRoundParticipantIds.length === 2) {
         return [...nextRoundParticipantIds]
@@ -198,7 +221,6 @@ export const generateLMSGameCreateData = (tournamentGames: GamesData, dbTourname
     const lastRoundNumber = Object.values(normalizedGames).map(game => splitGameKey(game.index).round).sort(function (a, b) { return b - a })[0];
     const isDYP: boolean = !!normalizedGames['1-1'].player1[1]?.id && !!normalizedGames['1-1'].player2[1]?.id;
     const isMonsterDYP = dbTournament.monsterDYP;
-    console.log(isMonsterDYP)
     const playerLives = getPlayersLives(tournamentGames, tournamentPlayerIds, dbTournament.numberOfLives)
 
     const aliveFilterCallback = (id: number) => {
@@ -232,11 +254,8 @@ export const generateLMSGameCreateData = (tournamentGames: GamesData, dbTourname
         const waitingParticipantIds = tournamentPlayerIds.filter(id => {
             return playerLives[id] > 0 && lastRoundParticipantIds.indexOf(id) === -1
         })
-
         const lastRoundAliveParticipantIds: number[] = lastRoundParticipantIds.filter(aliveFilterCallback);
-        console.log('lastRoundAliveParticipantIds', lastRoundAliveParticipantIds)
         const shuffledNextRoundParticipantIds = getShuffledNextRoundMonsterDYPParticipants(lastRoundParticipantIds, lastRoundAliveParticipantIds, waitingParticipantIds);
-        console.log('shuffledNextRoundParticipantIds', shuffledNextRoundParticipantIds)
         const nextGames: GameInsertData[] = shuffledNextRoundParticipantIds.reduce((acc: GameInsertData[], val: number, i: number, arr: number[]) => {
             if (arr.length >= 4) {
                 if (!arr[i + 1] || i % 4 !== 0) {
@@ -259,6 +278,7 @@ export const generateLMSGameCreateData = (tournamentGames: GamesData, dbTourname
             }
             return acc;
         }, []);
+
         const gameCreateData = generateGameCreateData(nextGames);
         return gameCreateData;
     }

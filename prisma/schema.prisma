@@ -37,6 +37,7 @@ model Tournament {
   games             Game[]
   players           Player[]
   numberOfTables    Int?
+  shareId           String?        @unique
   tablesByGameIndex Json?
   numberOfGoals     Int?
   numberOfLives     Int?

@@ -5,6 +5,8 @@ import { StatusCodesOkay } from '../../types/status';
 import { RequestWithUserId, ResBody } from '../../types/main';
 import { GameCreateData, GameCreationData, GameData, GamesData, GamesResData, GameUpdateData } from "./game.types";
 import { TournamentResData } from "../tournament/tournament.types";
+import { getTournamentForViewing } from "../tournament/tournament.service";
+import Tournament from "../tournament/tournament.model";
 
 export const getGames = asyncWrapper(async (req: RequestWithUserId, res: Response): Promise<void> => {
     const tournamentId = req.query.tournamentId?.toString();
@@ -45,6 +47,11 @@ export const editGame = asyncWrapper(async (req: RequestWithUserId, res: Respons
         success: true,
         data,
     };
+    if (global.socket && data.tournamentId) {
+        const tournament = new Tournament({ id: data.tournamentId, userId: req.userId })
+        const tournamentShareId = await tournament.getShareId();
+        global.socket.emit(tournamentShareId)
+    }
     res.status(StatusCodesOkay.OK).json(resBody);
 })
 
@@ -58,6 +65,9 @@ export const editGameAndNextGames = asyncWrapper(async (req: RequestWithUserId, 
         success: true,
         data: resData,
     };
+    if (global.socket && data.shareId) {
+        global.socket.emit(data.shareId)
+    }
     res.status(StatusCodesOkay.OK).json(resBody);
 })
 
