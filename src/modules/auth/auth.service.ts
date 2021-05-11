@@ -1,8 +1,8 @@
 import { DecodedTokenData, UserAuthData, UserCreateData, UserData, UserEditRequestData, UserLoginCheckResData, UserLoginTokenData, UserResetPasswordData, UserVerificationData } from "./auth.types";
 import BadRequestError from "../../errors/BadRequestError";
 import { checkPasswordAsync, encryptPasswordAsync } from "../../utils/encryption";
-import { createToken, getVerifiedData, verifyTokenData } from "../../utils/jwtTokenUtils";
-import { generateVerificationEmail, generateDeleteAccountEmail, sendEmail, generatePasswordResetEmail } from "../../utils/emailUtils";
+import { createToken, getTokenData, getVerifiedData, verifyTokenData } from "../../utils/jwtTokenUtils";
+import { generateVerificationEmail, generateDeleteAccountEmail, sendEmail, generatePasswordResetEmail, generateAccountDeletedEmail } from "../../utils/emailUtils";
 import User from "./auth.model";
 import UnprocessableEntity from "../../errors/UnprocessableEntity";
 import UnauthorizedError from "../../errors/UnauthorizedError";
@@ -140,6 +140,23 @@ export const loginCheck = async (tokenData: UserLoginTokenData): Promise<UserLog
     };
 }
 
+export const checkAccessToken = async (tokenData: UserLoginTokenData): Promise<string | null> => {
+    const { accessToken, refreshToken } = tokenData;
+
+    let newAccessToken: string | null = null;
+    let validAccessTokenData: DecodedTokenData = verifyTokenData(accessToken, ACCESS_TOKEN_SECRET);
+    const tokenDataWithExp: any = getTokenData(accessToken);
+    const tokenExpDate = tokenDataWithExp?.exp && new Date(tokenDataWithExp.exp * 1000).getTime();
+
+    const now = new Date().getTime();
+    if ((tokenExpDate - now) / 1000 < 300) {
+        newAccessToken = await obtainAccessTokenFromRefreshToken(refreshToken);
+        validAccessTokenData = verifyTokenData(newAccessToken, ACCESS_TOKEN_SECRET);
+    }
+
+    return newAccessToken;
+}
+
 export const updateUser = async (id: number, { displayName, currentPassword, password }: UserEditRequestData): Promise<UserData> => {
     let encryptedPassword: string = null;
     if (currentPassword) {
@@ -169,12 +186,13 @@ export const deleteAccountEmailRequest = async (id: number, locale: keyof typeof
     return user;
 }
 
-
-export const deleteUser = async (data: UserVerificationData): Promise<UserData> => {
+export const deleteUser = async (data: UserVerificationData, locale: keyof typeof Locales): Promise<void> => {
     const tokenData: DecodedTokenData = getVerifiedData(data.token, VERIFICATION_TOKEN_SECRET);
     const user = new User({ id: tokenData.id });
     const dbUser = await user.getById();
     if (!dbUser) throw new BadRequestError("User not found", ErrorNames.UserNotFound);
     if (dbUser.verificationToken !== data.token) throw new BadRequestError("Verification token is invalid", ErrorNames.InvalidToken);
-    return await user.deleteById();
+    await user.deleteById();
+    const emailData = generateAccountDeletedEmail(dbUser.email, locale);
+    await sendEmail(emailData);
 }

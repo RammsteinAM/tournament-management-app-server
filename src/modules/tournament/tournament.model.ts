@@ -326,19 +326,20 @@ export default class Tournament {
     }
 
 
-    async deleteById(): Promise<{ id: number }> {
-        await prisma.game.deleteMany({
-            where: {
-                tournamentId: this.id
-            }
-        })
-        return await prisma.tournament.delete({
-            where: {
-                id: this.id
-            },
-            select: {
-                id: true
-            }
-        })
+    async deleteById(): Promise<void> {
+        // await prisma.game.deleteMany({
+        //     where: {
+        //         tournamentId: this.id
+        //     }
+        // })
+        // return await prisma.tournament.delete({
+        //     where: {
+        //         id: this.id
+        //     },
+        //     select: {
+        //         id: true
+        //     }
+        // })
+        await prisma.$executeRaw`DELETE FROM "Tournament" WHERE id = ${this.id}`;
     }
 }

@@ -70,6 +70,26 @@ export const loginCheck = asyncWrapper(async (req: Request, res: Response): Prom
   res.status(StatusCodesOkay.OK).json(reqBody);
 });
 
+export const checkAccessToken = asyncWrapper<Response>(async (req: Request, res: Response): Promise<Response> => {
+  const cookieAccessToken = req.cookies['x-auth-token'];
+  const { refreshToken } = req.body as UserLoginCheckData;
+  const tokenData: UserLoginTokenData = {
+    accessToken: cookieAccessToken,
+    refreshToken
+  }
+  const newAccessToken = await authServices.checkAccessToken(tokenData);
+  
+  if (newAccessToken) {
+    return res.status(StatusCodesOkay.OK).json({
+      success: true,
+      data: { accessToken: newAccessToken }
+    });
+  }
+  return res.status(StatusCodesOkay.NoContent).json({
+    success: true,
+  });
+});
+
 export const requestVerificationEmail = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
   const data = req.body as UserAuthData;
   const reqLocale: string = req.query.lang?.toString();
@@ -87,25 +107,12 @@ export const requestVerificationEmail = asyncWrapper(async (req: Request, res: R
   res.status(StatusCodesOkay.OK).json(reqBody);
 });
 
-export const requestAccessToken = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
-  // TODO
-  // const data = req.header as UserAuthData;
-  // const dbUser = await getAuthorizedUser(data);
-  // await generateAndSendVerificationEmail(dbUser);
-
-  const reqBody: ResBody = {
-    success: true,
-    message: "Verification Email sent",
-  };
-  res.status(StatusCodesOkay.OK).json(reqBody);
-});
-
 export const requestPasswordResetEmail = asyncWrapper(async (req: Request, res: Response): Promise<void> => {
   const data = req.body as UserPasswordResetData;
   const reqLocale: string = req.query.lang?.toString();
   let locale: keyof typeof Locales = Locales.en;
   if (Object.values(Locales).includes(reqLocale as Locales)) {
-      locale = reqLocale as Locales;
+    locale = reqLocale as Locales;
   }
   await authServices.sendPasswordResetEmail(data.email, locale);
 
@@ -167,8 +174,12 @@ export const deleteUserEmailRequest = asyncWrapper(async (req: RequestWithUserId
 
 export const deleteUser = asyncWrapper(async (req: Request<UserVerificationData>, res: Response): Promise<void> => {
   const { token } = req.params;
-  await authServices.deleteUser({token});
-
+  const reqLocale: string = req.query.lang?.toString();
+  let locale: keyof typeof Locales = Locales.en;
+  if (Object.values(Locales).includes(reqLocale as Locales)) {
+    locale = reqLocale as Locales;
+  }
+  await authServices.deleteUser({ token }, locale);
   res.status(StatusCodesOkay.NoContent).json({
     success: true,
   });

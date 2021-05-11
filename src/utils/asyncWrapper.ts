@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from '../../prisma/prisma';
 
-export const asyncWrapper = (func: (req: Request<any>, res: Response, next: NextFunction) => Promise<void>) =>
+export const asyncWrapper = <R>(func: (req: Request<any>, res: Response, next: NextFunction) => Promise<R>) =>
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             await func(req, res, next);

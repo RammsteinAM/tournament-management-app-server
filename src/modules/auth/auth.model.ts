@@ -120,11 +120,29 @@ export default class User {
         })
     }
 
-    async deleteById(): Promise<UserData> {
-        return await prisma.user.delete({
+    async deleteById(): Promise<void> {
+
+        await prisma.game.deleteMany({
             where: {
-                id: this.id
+                tournament: { userId: this.id }
             }
         })
+        await prisma.tournament.deleteMany({
+            where: {
+                userId: this.id
+            }
+        })
+        await prisma.player.deleteMany({
+            where: {
+                userId: this.id
+            }
+        })
+        await prisma.user.delete({
+            where: {
+                id: this.id
+            },
+        })
+        // await prisma.$executeRaw`DELETE FROM "Tournament" WHERE userId = ${this.id}`;
+        // await prisma.$executeRaw`DELETE FROM "User" WHERE id = ${this.id}`;
     }
 }

@@ -59,23 +59,23 @@ export const importTournament = asyncWrapper(async (req: RequestWithUserId, res:
 
 export const editTournament = asyncWrapper(async (req: RequestWithUserId<{ id: number }>, res: Response): Promise<void> => {
     const data = req.body as TournamentUpdateData;
-    const { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games } = await tournamentService.updateTournament({ ...data, userId: req.userId });
+    const { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games, shareId } = await tournamentService.updateTournament({ ...data, userId: req.userId });
     const resBody: ResBody<TournamentResData> = {
         success: true,
         data: { id, name, userId, sets, draw, monsterDYP, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, createdAt, updatedAt, games },
     };
-    if (global.socket && data.shareId) {
-        global.socket.emit(data.shareId)
+    if (global.socket && shareId) {
+        global.socket.emit(shareId)
     }
     res.status(StatusCodesOkay.OK).json(resBody);
 })
 
 export const deleteTournament = asyncWrapper(async (req: RequestWithUserId<{ id: string }>, res: Response): Promise<void> => {
     const { id } = req.params;
-    const { id: deletedId } = await tournamentService.deleteTournament({ id: parseInt(id, 10), userId: req.userId });
+    await tournamentService.deleteTournament({ id: parseInt(id, 10), userId: req.userId });
     const resBody: ResBody<{ id: number }> = {
         success: true,
-        data: { id: deletedId },
+        data: { id: parseInt(id, 10) },
     };
     res.status(StatusCodesOkay.OK).json(resBody);
 })

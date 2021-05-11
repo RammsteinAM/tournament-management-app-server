@@ -168,9 +168,9 @@ export const updateTournament = async (data: TournamentUpdateData): Promise<Tour
     return await tournament.updateById();
 };
 
-export const deleteTournament = async (data: TournamentBaseData): Promise<{ id: number }> => {
+export const deleteTournament = async (data: TournamentBaseData): Promise<void> => {
     const tournament = new Tournament(data);
-    return await tournament.deleteById();
+    await tournament.deleteById();
 }
 
 export const createTournamentGames = async (data: GamesCreateData): Promise<TournamentGamesData> => {

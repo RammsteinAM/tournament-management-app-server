@@ -7,7 +7,7 @@ import {
     login,
     loginCheck,
     requestVerificationEmail,
-    requestAccessToken,
+    checkAccessToken,
     requestPasswordResetEmail,
     resetPassword,
     getUser,
@@ -49,10 +49,10 @@ router.route("/forgot-password")
 router.route("/delete-account-request")
     .get(authorize, deleteUserEmailRequest);
 
+router.route("/check-access-token")
+    .post(authorize, checkAccessToken);
+
 router.route("/reset-password/:token")
     .post(resetPassword);
-
-router.route("/request-access-token")
-    .post(requestAccessToken);
 
 export default router;

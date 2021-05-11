@@ -12,6 +12,10 @@ export const verifyTokenData = (token: string, secret: string): DecodedTokenData
     return jwt.verify(token, secret) as DecodedTokenData;
 };
 
+export const getTokenData = (token: string): DecodedTokenData => {
+    return jwt.decode(token) as DecodedTokenData;
+};
+
 export const getVerifiedData = (token: string, secret: string): DecodedTokenData => {
     try {
         return verifyTokenData(token, secret);

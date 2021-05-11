@@ -58,9 +58,7 @@ export const generateDeleteAccountEmail = (email: string, displayName: string, t
     return message;
 }
 
-export const generateAccountDeletedEmail = (email: string, displayName: string, locale: keyof typeof Locales) => {
-    const name = displayName || email;
-
+export const generateAccountDeletedEmail = (email: string, locale: keyof typeof Locales) => {
     const message: EmailMessage = {
         to: email,
         from: process.env.SENDGRID_SENDER,
