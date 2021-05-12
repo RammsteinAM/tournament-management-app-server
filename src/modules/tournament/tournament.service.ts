@@ -219,6 +219,6 @@ export const giveTournamentShareAccess = async ({ id, userId }: TournamentBaseDa
 }
 
 export const revokeTournamentShareAccess = async ({ id, userId }: TournamentBaseData): Promise<void> => {
-    const tournament = new Tournament({ id, userId, shareId: '' });
+    const tournament = new Tournament({ id, userId, shareId: null });
     await tournament.updateById();
 }

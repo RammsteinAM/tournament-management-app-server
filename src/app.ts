@@ -50,7 +50,9 @@ class App {
       socket.on('VIEW_TOURNAMENT', (x: any) => {
         getTournamentForViewing(x)
           .then((data) => {
-            data && socket.emit('VIEW_TOURNAMENT', data)
+            data ?
+              socket.emit('VIEW_TOURNAMENT', data) :
+              socket.emit('VIEW_TOURNAMENT', null)
           })
           .catch(e => {
             console.error(e)
