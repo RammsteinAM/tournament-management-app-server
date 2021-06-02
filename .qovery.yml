@@ -1,0 +1,15 @@
+---
+application:
+  name: "tour-tool-server"
+  project: "tourTool"
+  organization: "QoveryCommunity"
+databases:
+- type: "POSTGRESQL"
+  name: "tourToolDb"
+  version: "12"
+routers:
+- name: "main-tour-tool-server"
+  routes:
+  - application_name: "tour-tool-server"
+    paths:
+    - "/*"
