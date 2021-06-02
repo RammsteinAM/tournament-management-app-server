@@ -3,6 +3,7 @@ application:
   name: "tour-tool-server"
   project: "tourTool"
   organization: "QoveryCommunity"
+  port: 3000
 databases:
 - type: "POSTGRESQL"
   name: "tourToolDb"
