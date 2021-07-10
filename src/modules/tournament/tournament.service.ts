@@ -3,8 +3,8 @@ import { generateGameCreateData, generateGameCreateDataForImportedTournament, ge
 import { ErrorNames } from "../../types/error";
 import { getTournamentGames } from "../game/game.service";
 import { GameInsertData, GamesData, TournamentGameCreateData } from "../game/game.types";
-import { createPlayers, getUserPlayers } from "../player/player.service";
-import { DBPlayer } from "../player/player.types";
+import { createPlayerModifications, createPlayers, getUserPlayers } from "../player/player.service";
+import { DBPlayer, PlayerModificationCreateData, PlayerModificationData } from "../player/player.types";
 import { generateLMSGameCreateData } from "./tournament.helpers";
 import Tournament from "./tournament.model";
 import { GamesCreateData, GamesUpdateData, TournamentCreateData, TournamentData, TournamentBaseData, TournamentJSONData, TournamentGamesData, TournamentResData, TournamentsNormalizedData, TournamentUpdateData } from "./tournament.types";
@@ -50,7 +50,7 @@ export const createTournament = async (data: TournamentCreateData): Promise<Tour
     const activeTables = getInitiallyActiveTables(data.games, data.numberOfTables);
     const tournament = new Tournament({ ...data, newGames: gameCreateData, players: playerConnectData, tablesByGameIndex: activeTables });
     const creationData = await tournament.create();
-    const { id, name, userId, sets, draw, monsterDYP, tournamentTypeId, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, games, players, createdAt, updatedAt } = creationData;
+    const { id, name, userId, sets, draw, monsterDYP, tournamentTypeId, numberOfTables, tablesByGameIndex, numberOfLives, numberOfGoals, pointsForDraw, pointsForWin, games, players, playerModification, createdAt, updatedAt } = creationData;
     const playerIds = players.map(val => val.id);
     const resData: TournamentResData = {
         id,
@@ -67,6 +67,7 @@ export const createTournament = async (data: TournamentCreateData): Promise<Tour
         pointsForWin,
         games,
         tournamentTypeId,
+        playerModification,
         createdAt,
         updatedAt,
         players: playerIds
@@ -107,6 +108,20 @@ export const importTournament = async (data: TournamentJSONData & { userId: numb
             }
             return acc;
         }, {});
+
+        const modificationDataWithPlayerIds = data.playerModification.reduce(
+            (acc: Omit<PlayerModificationCreateData, "tournamentId">[],
+                val,
+                i: number
+            ) => {
+                const modification: Omit<PlayerModificationCreateData, "tournamentId"> = {
+                    playerId: normalizedTournamentPlayers[val.player.name],
+                    initialNumberOfLives: val.initialNumberOfLives,
+                    removed: val.removed
+                }
+                acc.push(modification);
+                return acc;
+            }, []);
 
         const gameDataWithNewPlayerIds: GameInsertData[] = data.games.map(game => {
             const player1Data: DBPlayer = []
@@ -156,7 +171,11 @@ export const importTournament = async (data: TournamentJSONData & { userId: numb
         const playerConnectData = generatePlayerConnectData(Object.values(normalizedTournamentPlayers));
         const activeTables = getInitiallyActiveTables(data.games, data.numberOfTables);
         const tournament = new Tournament({ ...data, newGames: gameCreateData, players: playerConnectData, tablesByGameIndex: activeTables });
-        return await tournament.create();
+        const createdTournament = await tournament.create();
+
+        const createdPlayerModifications = await createPlayerModifications(createdTournament.id, modificationDataWithPlayerIds);
+
+        return { ...createdTournament, playerModification: createdPlayerModifications };
     } catch (error) {
         throw new BadRequestError('Error importing tournament', ErrorNames.ImportTournamentFailed)
     }

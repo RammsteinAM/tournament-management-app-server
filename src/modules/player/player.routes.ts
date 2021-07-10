@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authorize } from "../../utils/authMiddleware";
-import { getPlayer, getPlayers, createPlayer, createPlayers, editPlayer, deletePlayer } from "./player.controller";
+import { getPlayer, getPlayers, createPlayer, createPlayers, insertOrRemoveTournamentPlayer, editPlayer, deletePlayer } from "./player.controller";
 
 const router = Router();
 
@@ -11,6 +11,8 @@ router.route("/")
 router.route("/create-many")
   .post(authorize, createPlayers);
 
+router.route("/modify-tournament-player")
+  .post(authorize, insertOrRemoveTournamentPlayer);
 
 router.route("/:id")
   .get(authorize, getPlayer)

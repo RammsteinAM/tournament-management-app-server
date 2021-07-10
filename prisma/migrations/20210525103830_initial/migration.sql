@@ -19,10 +19,18 @@ CREATE TABLE "User" (
 CREATE TABLE "Tournament" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "goalsToWin" INTEGER,
-    "winningSets" INTEGER NOT NULL,
-    "userId" INTEGER,
+    "sets" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
     "tournamentTypeId" INTEGER NOT NULL,
+    "numberOfTables" INTEGER,
+    "shareId" TEXT,
+    "tablesByGameIndex" JSONB,
+    "numberOfGoals" INTEGER,
+    "numberOfLives" INTEGER,
+    "draw" BOOLEAN,
+    "monsterDYP" BOOLEAN,
+    "pointsForWin" INTEGER,
+    "pointsForDraw" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -42,6 +50,7 @@ CREATE TABLE "Player" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "userId" INTEGER,
+    "isDeleted" BOOLEAN,
 
     PRIMARY KEY ("id")
 );
@@ -52,9 +61,16 @@ CREATE TABLE "Game" (
     "tournamentId" INTEGER NOT NULL,
     "scores1" INTEGER[],
     "scores2" INTEGER[],
+    "hasByePlayer" BOOLEAN,
     "index" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "_PlayerToTournament" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
 );
 
 -- CreateTable
@@ -79,6 +95,15 @@ CREATE UNIQUE INDEX "User.googleId_unique" ON "User"("googleId");
 CREATE UNIQUE INDEX "User.facebookId_unique" ON "User"("facebookId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Tournament.shareId_unique" ON "Tournament"("shareId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_PlayerToTournament_AB_unique" ON "_PlayerToTournament"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_PlayerToTournament_B_index" ON "_PlayerToTournament"("B");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "_p1_AB_unique" ON "_p1"("A", "B");
 
 -- CreateIndex
@@ -91,7 +116,7 @@ CREATE UNIQUE INDEX "_p2_AB_unique" ON "_p2"("A", "B");
 CREATE INDEX "_p2_B_index" ON "_p2"("B");
 
 -- AddForeignKey
-ALTER TABLE "Tournament" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Tournament" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Tournament" ADD FOREIGN KEY ("tournamentTypeId") REFERENCES "TournamentType"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -101,6 +126,12 @@ ALTER TABLE "Player" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELET
 
 -- AddForeignKey
 ALTER TABLE "Game" ADD FOREIGN KEY ("tournamentId") REFERENCES "Tournament"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_PlayerToTournament" ADD FOREIGN KEY ("A") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_PlayerToTournament" ADD FOREIGN KEY ("B") REFERENCES "Tournament"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_p1" ADD FOREIGN KEY ("A") REFERENCES "Game"("id") ON DELETE CASCADE ON UPDATE CASCADE;

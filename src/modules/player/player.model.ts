@@ -28,7 +28,7 @@ export default class Player {
             {
                 name: this.name,
                 user: {
-                    connect: { id: 1 }
+                    connect: { id: this.userId }
                 }
             }
         });

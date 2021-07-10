@@ -1,5 +1,5 @@
 export const shuffle = <T>(array: T[]): T[] => {
-    var currentIndex = array.length, temporaryValue, randomIndex;
+    let currentIndex = array.length, temporaryValue, randomIndex;
 
     while (0 !== currentIndex) {
 
@@ -15,9 +15,9 @@ export const shuffle = <T>(array: T[]): T[] => {
 }
 
 export const arrayAlreadyHasArray = <T>(arr: T[][], testArr: T[]): boolean => {
-    for (var i = 0; i < arr.length; i++) {
-        let checker = []
-        for (var j = 0; j < arr[i].length; j++) {
+    for (let i = 0; i < arr.length; i++) {
+        const checker = []
+        for (let j = 0; j < arr[i].length; j++) {
             if (arr[i][j] === testArr[j]) {
                 checker.push(true)
             } else {

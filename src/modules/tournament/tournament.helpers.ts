@@ -1,11 +1,20 @@
 import { generateGameCreateData, getMultipleSetScores, splitGameKey } from "../../helpers";
 import { arrayAlreadyHasArray, shuffle } from "../../utils/arrayUtils";
 import { GameData, GameInsertData, GamesData, TournamentGameCreateData } from "../game/game.types";
+import { PlayerModificationData } from "../player/player.types";
 import { TournamentData } from "./tournament.types";
 
-export const getPlayersLives = (tournamentGames: GamesData, tournamentPlayers: number[], numberOfLives: number) => {
+export const getPlayersLives = (tournamentGames: GamesData, tournamentPlayers: number[], numberOfDefaultLives: number, playerModifications: PlayerModificationData[]) => {
     const playerInitialLives = tournamentPlayers.reduce((acc: { [id: number]: number }, val) => {
-        acc[val] = numberOfLives;
+        acc[val] = numberOfDefaultLives;
+        const modifiedNumberOfLives = playerModifications.find(m => m.playerId === val).initialNumberOfLives;
+        const isRemoved = playerModifications.find(m => m.playerId === val).removed;
+        if (modifiedNumberOfLives) {
+            acc[val] = modifiedNumberOfLives;
+        }       
+        if (isRemoved) {
+            acc[val] = 0;
+        }
         return acc;
     }, {});
 
@@ -182,7 +191,7 @@ export const getShuffledNextRoundMonsterDYPParticipants = (lastRoundParticipantI
 
             if (lastRoundTeammates[nextRoundParticipantIds[i]] === nextRoundParticipantIds[i - 1]) {
                 if (nextRoundParticipantIds[i - 2] && nextRoundParticipantIds[i - 3]) {
-                    
+
                     shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 2], nextRoundParticipantIds[i - 1], nextRoundParticipantIds[i - 3]);
                     if (lastRoundTeammates[nextRoundParticipantIds[i - 1]] === nextRoundParticipantIds[i - 3]) {
                         swapParticipantsToNonRepetitivePairs(lastRoundTeammates, shuffledNextRoundParticipantIds);
@@ -193,7 +202,7 @@ export const getShuffledNextRoundMonsterDYPParticipants = (lastRoundParticipantI
                     shuffledNextRoundParticipantIds.push(nextRoundParticipantIds[i], nextRoundParticipantIds[i - 1]);
                     /*
                     Since in the last round next two participants were teammates,
-                    none of them could be anyone else's pair, therefore we can
+                    none of them could be anyone elses pair, therefore we can
                     swap one of them with any other participant.
                     */
                     swapParticipantsToNonRepetitivePairs(lastRoundTeammates, shuffledNextRoundParticipantIds);
@@ -211,17 +220,24 @@ export const getShuffledNextRoundMonsterDYPParticipants = (lastRoundParticipantI
 
 export const generateLMSGameCreateData = (tournamentGames: GamesData, dbTournament: TournamentData): TournamentGameCreateData => {
     const tournamentPlayerIds: number[] = dbTournament.players.map(player => player.id);
+
     const normalizedGames = tournamentGames.reduce((acc: { [index: string]: GameData }, val: GameData) => {
         if (!val.index) {
             return acc;
         }
         acc[val.index] = val;
         return acc;
-    }, {})
+    }, {});
+
     const lastRoundNumber = Object.values(normalizedGames).map(game => splitGameKey(game.index).round).sort(function (a, b) { return b - a })[0];
+
     const isDYP: boolean = !!normalizedGames['1-1'].player1[1]?.id && !!normalizedGames['1-1'].player2[1]?.id;
+
     const isMonsterDYP = dbTournament.monsterDYP;
-    const playerLives = getPlayersLives(tournamentGames, tournamentPlayerIds, dbTournament.numberOfLives)
+
+    const playerModification = dbTournament.playerModification;
+
+    const playerLives = getPlayersLives(tournamentGames, tournamentPlayerIds, dbTournament.numberOfLives, playerModification);
 
     const aliveFilterCallback = (id: number) => {
         return playerLives[id] > 0
@@ -249,13 +265,16 @@ export const generateLMSGameCreateData = (tournamentGames: GamesData, dbTourname
                 return acc;
             },
             []
-        )
+        );
 
         const waitingParticipantIds = tournamentPlayerIds.filter(id => {
             return playerLives[id] > 0 && lastRoundParticipantIds.indexOf(id) === -1
-        })
+        });
+
         const lastRoundAliveParticipantIds: number[] = lastRoundParticipantIds.filter(aliveFilterCallback);
+
         const shuffledNextRoundParticipantIds = getShuffledNextRoundMonsterDYPParticipants(lastRoundParticipantIds, lastRoundAliveParticipantIds, waitingParticipantIds);
+
         const nextGames: GameInsertData[] = shuffledNextRoundParticipantIds.reduce((acc: GameInsertData[], val: number, i: number, arr: number[]) => {
             if (arr.length >= 4) {
                 if (!arr[i + 1] || i % 4 !== 0) {
@@ -280,6 +299,7 @@ export const generateLMSGameCreateData = (tournamentGames: GamesData, dbTourname
         }, []);
 
         const gameCreateData = generateGameCreateData(nextGames);
+
         return gameCreateData;
     }
     if (isDYP) {
@@ -312,6 +332,7 @@ export const generateLMSGameCreateData = (tournamentGames: GamesData, dbTourname
         const lastRoundAliveParticipantIds: [number, number][] = lastRoundParticipantIds.filter(aliveFilterCallback2D)
 
         const shuffledNextRoundParticipantIds = getShuffledNextRoundDYPParticipants(lastRoundParticipantIds, lastRoundAliveParticipantIds, waitingParticipantIds);
+
         const nextGames: GameInsertData[] = shuffledNextRoundParticipantIds.reduce((acc: GameInsertData[], val: [number, number], i: number, arr: [number, number][]) => {
             if (!arr[i + 1] || i % 2 === 1) {
                 return acc;
@@ -326,6 +347,7 @@ export const generateLMSGameCreateData = (tournamentGames: GamesData, dbTourname
         const gameCreateData = generateGameCreateData(nextGames);
         return gameCreateData;
     }
+
     const lastRoundParticipantIds: number[] = tournamentGames.reduce(
         (acc: number[], val) => {
             if (!val.player1 || !val.player2) {
@@ -338,9 +360,11 @@ export const generateLMSGameCreateData = (tournamentGames: GamesData, dbTourname
         },
         []
     )
+
     const waitingParticipantIds = tournamentPlayerIds.filter(id => {
         return playerLives[id] > 0 && lastRoundParticipantIds.indexOf(id) === -1
     })
+
     const lastRoundAliveParticipantIds = lastRoundParticipantIds.filter(aliveFilterCallback)
 
     const shuffledNextRoundParticipantIds = getShuffledNextRoundParticipants(lastRoundParticipantIds, lastRoundAliveParticipantIds, waitingParticipantIds);
@@ -356,6 +380,8 @@ export const generateLMSGameCreateData = (tournamentGames: GamesData, dbTourname
         })
         return acc;
     }, []);
+
     const gameCreateData = generateGameCreateData(nextGames);
+
     return gameCreateData;
 }

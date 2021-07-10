@@ -1,5 +1,5 @@
-import { GameData, GameInsertData, GamesData, GameUpdateDataForMultipleGames, GameViewData, ImportedGamesData, TournamentGameCreateData, TournamentGameUpdateData } from "../game/game.types";
-import { DBPlayer, DBPlayerWithName } from "../player/player.types";
+import { GameInsertData, GamesData, GameUpdateDataForMultipleGames, GameViewData, ImportedGamesData, TournamentGameCreateData, TournamentGameUpdateData } from "../game/game.types";
+import { DBPlayer, DBPlayerWithName, PlayerModificationData } from "../player/player.types";
 
 export type TournamentDataWithUserId<T> = T & { userId: number }
 
@@ -52,13 +52,13 @@ export interface TournamentResData {
     pointsForWin?: number,
     pointsForDraw?: number;
     tournamentTypeId?: number;
+    playerModification: PlayerModificationData[];
     shareId?: string;
     createdAt?: Date;
     updatedAt?: Date;
     games: GamesData;
     players?: number[];
 }
-
 
 export interface TournamentJSONData {
     name: string;
@@ -72,6 +72,7 @@ export interface TournamentJSONData {
     pointsForWin?: number,
     pointsForDraw?: number;
     tournamentTypeId: number;
+    playerModification?: { player: { name: string }, initialNumberOfLives?: number, removed?: boolean }[];
     games: ImportedGamesData;
     players?: { id: number, name: string }[];
 }
@@ -90,13 +91,13 @@ export interface TournamentData {
     pointsForWin?: number,
     pointsForDraw?: number;
     tournamentTypeId?: number;
+    playerModification?: PlayerModificationData[];
     games?: GamesData;
     players?: DBPlayer;
     shareId?: string;
     createdAt: Date;
     updatedAt: Date;
 }
-
 
 export interface TournamentViewData {
     name?: string;
@@ -110,6 +111,7 @@ export interface TournamentViewData {
     pointsForWin?: number,
     pointsForDraw?: number;
     tournamentTypeId?: number;
+    playerModification?: PlayerModificationData[];
     games?: GameViewData;
     players?: DBPlayerWithName;
     createdAt: Date;

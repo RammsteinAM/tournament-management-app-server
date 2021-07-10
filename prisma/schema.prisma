@@ -27,26 +27,27 @@ model User {
 }
 
 model Tournament {
-  id                Int            @id @default(autoincrement())
-  name              String
-  sets              Int
-  user              User           @relation(fields: [userId], references: [id])
-  userId            Int
-  tournamentType    TournamentType @relation(fields: [tournamentTypeId], references: [id])
-  tournamentTypeId  Int
-  games             Game[]
-  players           Player[]
-  numberOfTables    Int?
-  shareId           String?        @unique
-  tablesByGameIndex Json?
-  numberOfGoals     Int?
-  numberOfLives     Int?
-  draw              Boolean?
-  monsterDYP        Boolean?
-  pointsForWin      Int?
-  pointsForDraw     Int?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  sets               Int
+  user               User                 @relation(fields: [userId], references: [id])
+  userId             Int
+  tournamentType     TournamentType       @relation(fields: [tournamentTypeId], references: [id])
+  tournamentTypeId   Int
+  games              Game[]
+  players            Player[]
+  playerModification PlayerModification[]
+  numberOfTables     Int?
+  shareId            String?              @unique
+  tablesByGameIndex  Json?
+  numberOfGoals      Int?
+  numberOfLives      Int?
+  draw               Boolean?
+  monsterDYP         Boolean?
+  pointsForWin       Int?
+  pointsForDraw      Int?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 }
 
 model TournamentType {
@@ -56,14 +57,25 @@ model TournamentType {
 }
 
 model Player {
-  id          Int          @id @default(autoincrement())
-  name        String
-  user        User?        @relation(fields: [userId], references: [id])
-  userId      Int?
-  games1      Game[]       @relation("p1")
-  games2      Game[]       @relation("p2")
-  isDeleted   Boolean?
-  Tournaments Tournament[]
+  id           Int                  @id @default(autoincrement())
+  name         String
+  user         User?                @relation(fields: [userId], references: [id])
+  userId       Int?
+  games1       Game[]               @relation("p1")
+  games2       Game[]               @relation("p2")
+  isDeleted    Boolean?
+  Tournaments  Tournament[]
+  modification PlayerModification[]
+}
+
+model PlayerModification {
+  id                   Int        @id @default(autoincrement())
+  tournament           Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId         Int
+  player               Player     @relation(fields: [playerId], references: [id])
+  playerId             Int
+  initialNumberOfLives Int?
+  removed              Boolean?
 }
 
 model Game {

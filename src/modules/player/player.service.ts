@@ -2,8 +2,9 @@ import BadRequestError from "../../../src/errors/BadRequestError";
 import { UserEditRequestData } from "../auth/auth.types";
 import Player from "./player.model";
 import Players from "./players.model";
+import PlayerModification from "./playerModification.model";
 import { ErrorNames } from "../../types/error";
-import { PlayerCreateData, PlayerData } from "./player.types";
+import { PlayerCreateData, PlayerData, PlayerModificationCreateData, PlayerModificationData } from "./player.types";
 
 export const getUserPlayers = async (userId: number): Promise<PlayerData[]> => {
     const players = new Player({ userId });
@@ -30,6 +31,35 @@ export const createPlayers = async (names: string[], userId: number): Promise<Pl
     player.names = newPlayerNames;
     const updatedUserData = await player.createMany();
     return updatedUserData.players;
+}
+
+export const getPlayerModifications = async (tournamentId: number): Promise<PlayerModificationData[]> => {
+    const playerModification = new PlayerModification({ tournamentId });
+    const data = await playerModification.getPlayerModifications();
+    return data;
+}
+
+export const createPlayerModification = async (data: PlayerModificationCreateData): Promise<number> => {
+    const playerModification = new PlayerModification(data);
+    const existingModification = await playerModification.findPlayerModification();
+    if (existingModification?.id) {
+        const updatedModification = await playerModification.updatePlayerModification(existingModification.id);
+        return updatedModification.id;
+    }
+    const createdModification = await playerModification.createPlayerModification();
+    return createdModification.id;
+}
+
+export const createPlayerModifications = async (tournamentId: number, data: Omit<PlayerModificationCreateData, "tournamentId">[]): Promise<PlayerModificationData[]> => {
+    const modifications: PlayerModificationData[] = [];
+    
+    for (const modification of data) {
+        const playerModification = new PlayerModification({ ...modification, tournamentId });
+        const createdModification = await playerModification.createPlayerModification();
+        modifications.push(createdModification);
+    }
+    
+    return modifications;
 }
 
 export const updatePlayer = async (id: number, { displayName, currentPassword, password }: UserEditRequestData): Promise<PlayerData> => {

@@ -41,5 +41,28 @@ export interface PlayersInstanceData {
     names?: string[];
 }
 
+export interface PlayerModificationInstanceData {
+    tournamentId: number;
+    id?: number;
+    playerId?: number;
+    initialNumberOfLives?: number;
+    removed?: boolean;
+}
+
+export interface PlayerModificationData {
+    id: number;
+    tournamentId: number;
+    playerId: number;
+    initialNumberOfLives?: number;
+    removed?: boolean;
+}
+
+export interface PlayerModificationCreateData {
+    tournamentId: number;
+    playerId: number;
+    initialNumberOfLives?: number;
+    removed?: boolean;
+}
+
 export type DBPlayer = { id: number }[]
 export type DBPlayerWithName = { id: number, name: string }[]

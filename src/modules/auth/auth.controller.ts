@@ -78,7 +78,7 @@ export const checkAccessToken = asyncWrapper<Response>(async (req: Request, res:
     refreshToken
   }
   const newAccessToken = await authServices.checkAccessToken(tokenData);
-  
+
   if (newAccessToken) {
     return res.status(StatusCodesOkay.OK).json({
       success: true,

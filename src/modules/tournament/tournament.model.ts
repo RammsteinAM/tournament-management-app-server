@@ -1,6 +1,7 @@
 import prisma from "../../../prisma/prisma";
 import { TournamentGameCreateData, TournamentGameUpdateData } from "../game/game.types";
 import { TournamentData, TournamentGamesData, TournamentInstanceData, TournamentJSONData, TournamentPlayerConnectData, TournamentResData } from "./tournament.types";
+
 export default class Tournament {
     id: number;
     userId: number;
@@ -61,6 +62,7 @@ export default class Tournament {
                 shareId: true,
                 createdAt: true,
                 updatedAt: true,
+                playerModification: true,
                 players: {
                     select: {
                         id: true
@@ -102,6 +104,7 @@ export default class Tournament {
                 tournamentTypeId: true,
                 createdAt: true,
                 updatedAt: true,
+                playerModification: true,
                 players: {
                     select: {
                         id: true,
@@ -138,6 +141,17 @@ export default class Tournament {
                 draw: true,
                 monsterDYP: true,
                 tournamentTypeId: true,
+                playerModification: {
+                    select: {
+                        player: {
+                            select: {
+                                name: true
+                            }
+                        },
+                        initialNumberOfLives: true,
+                        removed: true
+                    }
+                },
                 createdAt: true,
                 players: {
                     select: {
@@ -161,7 +175,7 @@ export default class Tournament {
     }
 
     async getShareId(): Promise<string> {
-        const tournament =  await prisma.tournament.findUnique({
+        const tournament = await prisma.tournament.findUnique({
             where: { id: this.id },
             select: {
                 shareId: true,
@@ -177,6 +191,7 @@ export default class Tournament {
                 id: true,
                 name: true,
                 numberOfLives: true,
+                playerModification: true,
                 monsterDYP: true,
                 sets: true,
                 userId: true,
@@ -310,6 +325,7 @@ export default class Tournament {
                 userId: true,
                 tablesByGameIndex: true,
                 shareId: true,
+                playerModification: true,
                 games: {
                     select: {
                         id: true,
