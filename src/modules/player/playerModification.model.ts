@@ -11,7 +11,7 @@ export default class PlayerModification {
         this.id = data.id;
         this.tournamentId = data.tournamentId;
         this.playerId = data.playerId;
-        this.initialNumberOfLives = data.initialNumberOfLives;
+        this.initialNumberOfLives = data?.initialNumberOfLives;
         this.removed = data.removed;
     }
 

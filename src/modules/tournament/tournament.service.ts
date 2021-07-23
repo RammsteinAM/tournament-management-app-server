@@ -116,7 +116,7 @@ export const importTournament = async (data: TournamentJSONData & { userId: numb
             ) => {
                 const modification: Omit<PlayerModificationCreateData, "tournamentId"> = {
                     playerId: normalizedTournamentPlayers[val.player.name],
-                    initialNumberOfLives: val.initialNumberOfLives,
+                    initialNumberOfLives: val?.initialNumberOfLives,
                     removed: val.removed
                 }
                 acc.push(modification);

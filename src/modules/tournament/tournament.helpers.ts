@@ -7,8 +7,8 @@ import { TournamentData } from "./tournament.types";
 export const getPlayersLives = (tournamentGames: GamesData, tournamentPlayers: number[], numberOfDefaultLives: number, playerModifications: PlayerModificationData[]) => {
     const playerInitialLives = tournamentPlayers.reduce((acc: { [id: number]: number }, val) => {
         acc[val] = numberOfDefaultLives;
-        const modifiedNumberOfLives = playerModifications.find(m => m.playerId === val).initialNumberOfLives;
-        const isRemoved = playerModifications.find(m => m.playerId === val).removed;
+        const modifiedNumberOfLives = playerModifications.find(m => m.playerId === val)?.initialNumberOfLives;
+        const isRemoved = playerModifications.find(m => m.playerId === val)?.removed;
         if (modifiedNumberOfLives) {
             acc[val] = modifiedNumberOfLives;
         }       
